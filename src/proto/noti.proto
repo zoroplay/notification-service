@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package notification;
+
+service SmsService {
+  rpc SendSms (SendSmsRequest) returns (SendSmsResponse);
+  rpc GetDeliveryReport (DeliveryReportRequest) returns (DeliveryReportResponse);
+}
+
+message SendSmsRequest {
+  string username = 1;
+  string password = 2;
+  string senderId = 3;
+  string phoneNo = 4;
+  string message = 5;
+}
+
+message SendSmsResponse {
+  string response = 1;
+  string message_id = 2;
+}
+
+message DeliveryReportRequest {
+  string username = 1;
+  string password = 2;
+  string message_id = 3;
+}
+
+message DeliveryReportResponse {
+  string status = 1;
+  string timeSubmitted = 2;
+  string timeDelivered = 3;
+  string message = 4;
+  string sender = 5;
+  string messageId = 6;
+}
