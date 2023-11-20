@@ -2,6 +2,7 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { SmsService } from './sms.service';
 import { CreateSmDto } from './dto/create-sm.dto';
+import { SendSMSDTO } from './dto/send-sms.dto';
 
 @Controller()
 export class SmsController {
@@ -12,7 +13,11 @@ export class SmsController {
     return this.smsService.create(createSmDto);
   }
   @MessagePattern('sendSms')
-  async sendSms(@Payload() smsRequest: SendSmsRequest) {
+  async sendSms(@Payload() smsRequest: SendSMSDTO) {
     return this.smsService.sendSMS(smsRequest);
+  }
+  @MessagePattern('deliveryReport')
+  async deliveryReport(@Payload() deliveryReport: SendSMSDTO) {
+    return this.smsService.getDeliveryReport(deliveryReport);
   }
 }
