@@ -17,6 +17,7 @@ message SendSmsRequest {
   string list = 7;
   string schedule = 8;
   string channel = 9;
+  string mode = 10;
 }
 
 message SendSmsResponse {
