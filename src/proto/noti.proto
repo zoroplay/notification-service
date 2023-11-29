@@ -11,6 +11,12 @@ message SendSmsRequest {
   string msisdn = 1;
   string text = 2;
   string senderId = 3;
+  string name = 4;
+  string from = 5;
+  string status = 6;
+  string list = 7;
+  string schedule = 8;
+  string channel = 9;
 }
 
 message SendSmsResponse {

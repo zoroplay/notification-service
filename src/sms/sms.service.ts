@@ -5,6 +5,26 @@ import axios from 'axios';
 
 @Injectable()
 export class SmsService {
+  async sendSMSYournotify(request: any): Promise<any> {
+    try {
+      const response = await axios.post(
+        'https://api.yournotify.com/campaigns/sms',
+        {
+          name: request.name,
+          from: request.from,
+          text: request.text,
+          status: request.status,
+          lists: request.lists,
+          schedule: request.schedule,
+          channel: request.channel,
+        },
+      );
+
+      return { message: response.data };
+    } catch (error) {
+      throw new Error(`Failed to send SMS: ${error.message}`);
+    }
+  }
   async sendSMS(request: any): Promise<any> {
     try {
       const possibleData = [
