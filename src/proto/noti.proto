@@ -3,9 +3,26 @@ syntax = "proto3";
 package notification;
 
 service SmsService {
+  rpc SaveSettings (SaveSettingsRequest) returns (SaveSettingsResponse);
   rpc SendSms (SendSmsRequest) returns (SendSmsResponse);
   rpc GetDeliveryReport (DeliveryReportRequest) returns (DeliveryReportResponse);
 }
+
+message SaveSettingsRequest {
+  string settings_id = 1;
+  boolean enable = 2;
+  string display_name = 3;
+  string gateway_name = 4;
+  string sender_id = 5;
+  string api_key = 6;
+  string username = 7;
+  string password = 8;
+}
+
+message SaveSettingsResponse {
+  string message = 1;
+}
+
 
 message SendSmsRequest {
   string msisdn = 1;

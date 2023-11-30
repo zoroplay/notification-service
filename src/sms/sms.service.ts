@@ -1,10 +1,46 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
 import { CreateSmDto } from './dto/create-sm.dto';
 import { UpdateSmDto } from './dto/update-sm.dto';
 import axios from 'axios';
+import { SaveSettingsDTO } from './dto/sms-settings.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class SmsService {
+  constructor(private prisma: PrismaService) {}
+  async saveSettings(_request: SaveSettingsDTO): Promise<any> {
+    try {
+      if (_request.settings_id) {
+        const is_settings_id = await this.prisma.settings.findUnique({
+          where: {
+            id: _request.settings_id,
+          },
+        });
+
+        if (!is_settings_id)
+          throw new Error(`The Id sent does not exist in database, verify`);
+
+        await this.prisma.settings.update({
+          where: {
+            id: _request.settings_id,
+          },
+          data: {
+            ..._request,
+          },
+        });
+      } else {
+        await this.prisma.settings.create({
+          data: {
+            ..._request,
+          },
+        });
+      }
+    } catch (error) {
+      throw new Error(`Failed to send SMS: ${error.message}`);
+    }
+  }
   async sendSMSYournotify(request: any): Promise<any> {
     try {
       const response = await axios.post(
