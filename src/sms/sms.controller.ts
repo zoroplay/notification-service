@@ -1,7 +1,10 @@
+/* eslint-disable prettier/prettier */
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { SmsService } from './sms.service';
 import { CreateSmDto } from './dto/create-sm.dto';
+import { SendSMSDTO } from './dto/send-sms.dto';
+import { SaveSettingsDTO } from './dto/sms-settings.dto';
 
 @Controller()
 export class SmsController {
@@ -12,7 +15,16 @@ export class SmsController {
     return this.smsService.create(createSmDto);
   }
   @MessagePattern('sendSms')
-  async sendSms(@Payload() smsRequest: SendSmsRequest) {
-    return this.smsService.sendSMS(smsRequest);
+  async sendSms(@Payload() smsRequest: SendSMSDTO) {
+    return this.smsService.handleSms(smsRequest);
+  }
+  @MessagePattern('saveSettings')
+  async saveSettings(@Payload() saveSettings: SaveSettingsDTO) {
+    return this.smsService.saveSettings(saveSettings);
+  }
+
+  @MessagePattern('deliveryReport')
+  async deliveryReport(@Payload() deliveryReport: SendSMSDTO) {
+    return this.smsService.getDeliveryReport(deliveryReport);
   }
 }

@@ -1,0 +1,27 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Settings {
+  id           String   @id @default(uuid()) @map("settings_id")
+  enable       Boolean
+  display_name String
+  gateway_name String
+  sender_id    String
+  api_key      String
+  username     String
+  password     String
+  status       Int
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("sms_provider_settings")
+}
