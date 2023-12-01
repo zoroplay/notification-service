@@ -35,6 +35,7 @@ message SendSmsRequest {
   string schedule = 8;
   string channel = 9;
   string mode = 10;
+  string campaign_type = 11;
 }
 
 message SendSmsResponse {

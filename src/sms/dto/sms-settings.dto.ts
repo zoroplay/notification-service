@@ -8,5 +8,6 @@ export class SaveSettingsDTO {
     api_key: string;
     username: string;
     password: string;
+    status: 0 | 1
 }
   

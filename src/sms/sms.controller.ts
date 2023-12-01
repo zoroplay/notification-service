@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { SmsService } from './sms.service';
@@ -15,11 +16,7 @@ export class SmsController {
   }
   @MessagePattern('sendSms')
   async sendSms(@Payload() smsRequest: SendSMSDTO) {
-    if (smsRequest.mode === 'mtech') {
-      return this.smsService.sendSMS(smsRequest);
-    } else {
-      return this.smsService.sendSMSYournotify(smsRequest);
-    }
+    return this.smsService.handleSms(smsRequest);
   }
   @MessagePattern('saveSettings')
   async saveSettings(@Payload() saveSettings: SaveSettingsDTO) {

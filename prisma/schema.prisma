@@ -19,6 +19,7 @@ model Settings {
   api_key      String
   username     String
   password     String
+  status       Int
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

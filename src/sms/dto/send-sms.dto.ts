@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
 export class SendSMSDTO {
-  mode: 'mtech'| 'yournotify';
   msisdn!: string;
   text!: string;
   sender_id!: string;
@@ -10,4 +9,5 @@ export class SendSMSDTO {
   list!: any;
   schedule!: string;
   channel!: string;
+  campaign_type!: string;
 }

@@ -10,6 +10,21 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class SmsService {
   constructor(private prisma: PrismaService) {}
+  async handleSms(request: any) {
+   const smsProvider = await this.prisma.settings.findMany({
+      where: {
+        status: 1
+      }
+    })
+
+    if (smsProvider[0].gateway_name.toLowerCase() === 'yournotify'){
+      return this.sendSMSYournotify(request)
+    } 
+    if (smsProvider[0].gateway_name.toLowerCase() === 'mtech'){
+      return this.sendSMS(request)
+    } 
+  }
+
   async saveSettings(_request: SaveSettingsDTO): Promise<any> {
     try {
       if (_request.settings_id) {
@@ -41,6 +56,7 @@ export class SmsService {
       throw new Error(`Failed to send SMS: ${error.message}`);
     }
   }
+
   async sendSMSYournotify(request: any): Promise<any> {
     try {
       const response = await axios.post(
@@ -53,6 +69,7 @@ export class SmsService {
           lists: request.lists,
           schedule: request.schedule,
           channel: request.channel,
+          campaign_type: request.campaign_type,
         },
       );
 
@@ -61,6 +78,7 @@ export class SmsService {
       throw new Error(`Failed to send SMS: ${error.message}`);
     }
   }
+
   async sendSMS(request: any): Promise<any> {
     try {
       const possibleData = [
