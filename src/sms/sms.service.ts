@@ -70,7 +70,11 @@ export class SmsService {
           schedule: request.schedule,
           channel: request.channel,
           campaign_type: request.campaign_type,
-        },
+        },{
+          headers:{
+            'authorization':`BEARER ${process.env.YOURNOTIFY_AUTH_KEY}`
+          }
+        }
       );
 
       return { message: response.data };
