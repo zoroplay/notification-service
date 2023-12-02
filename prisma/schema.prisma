@@ -11,15 +11,15 @@ datasource db {
 }
 
 model Settings {
-  id           String   @id @default(uuid()) @map("settings_id")
-  enable       Boolean
+  id           Int      @id @default(autoincrement())
+  clientId     Int      @map("client_id")
   display_name String
   gateway_name String
   sender_id    String
   api_key      String
   username     String
   password     String
-  status       Int
+  status       Boolean  @default(false)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

@@ -10,4 +10,5 @@ export class SendSMSDTO {
   schedule!: string;
   channel!: string;
   campaign_type!: string;
+  clientId: number;
 }

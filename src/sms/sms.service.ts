@@ -6,31 +6,52 @@ import { UpdateSmDto } from './dto/update-sm.dto';
 import axios from 'axios';
 import { SaveSettingsDTO } from './dto/sms-settings.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SaveSettingsRequest, SaveSettingsResponse, SendSmsRequest, SendSmsResponse } from 'src/noti.pb';
 
 @Injectable()
 export class SmsService {
-  constructor(private prisma: PrismaService) {}
-  async handleSms(request: any) {
-   const smsProvider = await this.prisma.settings.findMany({
+  constructor(private prisma: PrismaService) { }
+  async handleSms(request: SendSmsRequest) {
+
+    const smsProvider = await this.prisma.settings.findFirst({
       where: {
-        status: 1
+        status: true,
+        clientId: request.clientID
       }
     })
 
-    if (smsProvider[0].gateway_name.toLowerCase() === 'yournotify'){
-      return this.sendSMSYournotify(request)
-    } 
-    if (smsProvider[0].gateway_name.toLowerCase() === 'mtech'){
-      return this.sendSMS(request)
-    } 
+    if (smsProvider) {
+      switch (smsProvider.gateway_name) {
+        case 'yournotify':
+          this.sendSMSYournotify(request);
+          break;
+        case 'mtech':
+          return this.sendSMS(request);
+        default:
+          break;
+      }
+    } else {
+
+    }
   }
 
-  async saveSettings(_request: SaveSettingsDTO): Promise<any> {
+  async saveSettings(_request: SaveSettingsRequest): Promise<SaveSettingsResponse> {
     try {
-      if (_request.settings_id) {
+      const data = {
+        display_name: _request.displayName,
+        gateway_name: _request.gatewayName,
+        api_key: _request.apiKey,
+        username: _request.username,
+        password: _request.password,
+        status: _request.enable,
+        sender_id: _request.senderID,
+        clientId: _request.clientId
+      };
+
+      if (_request.settingID) {
         const is_settings_id = await this.prisma.settings.findUnique({
           where: {
-            id: _request.settings_id,
+            id: _request.settingID,
           },
         });
 
@@ -39,25 +60,20 @@ export class SmsService {
 
         await this.prisma.settings.update({
           where: {
-            id: _request.settings_id,
+            id: _request.settingID,
           },
-          data: {
-            ..._request,
-          },
+          data
         });
       } else {
-        await this.prisma.settings.create({
-          data: {
-            ..._request,
-          },
-        });
+        await this.prisma.settings.create({ data });
       }
+      return { status: true, message: 'Settings saved sucessfully' }
     } catch (error) {
-      throw new Error(`Failed to send SMS: ${error.message}`);
+      return { status: false, message: `Failed to send SMS: ${error.message}` }
     }
   }
 
-  async sendSMSYournotify(request: any): Promise<any> {
+  async sendSMSYournotify(request: any): Promise<SendSmsResponse> {
     try {
       const response = await axios.post(
         'https://api.yournotify.com/campaigns/sms',
@@ -70,16 +86,16 @@ export class SmsService {
           schedule: request.schedule,
           channel: request.channel,
           campaign_type: request.campaign_type,
-        },{
-          headers:{
-            'authorization':`BEARER ${process.env.YOURNOTIFY_AUTH_KEY}`
-          }
+        }, {
+        headers: {
+          'authorization': `BEARER ${process.env.YOURNOTIFY_AUTH_KEY}`
         }
+      }
       );
 
-      return { message: response.data };
+      return { status: true, message: response.data };
     } catch (error) {
-      throw new Error(`Failed to send SMS: ${error.message}`);
+      return { status: false, message: `Failed to send SMS: ${error.message}` }
     }
   }
 
@@ -114,9 +130,9 @@ export class SmsService {
         },
       );
 
-      return { message: response.data };
+      return { status: true, message: response.data };
     } catch (error) {
-      throw new Error(`Failed to send SMS: ${error.message}`);
+      return { status: false, message: `Failed to send SMS: ${error.message}` }
     }
   }
 
@@ -140,6 +156,7 @@ export class SmsService {
       throw new Error(`Failed to get Delivery report: ${error.message}`);
     }
   }
+
   create(createSmDto: CreateSmDto) {
     return 'This action adds a new sm';
   }

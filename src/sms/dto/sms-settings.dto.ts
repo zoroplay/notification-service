@@ -1,13 +1,13 @@
 /* eslint-disable prettier/prettier */
 export class SaveSettingsDTO {
-    settings_id!: string;
+    settingID!: number;
+    clientID: number;
     enable: boolean;
-    display_name: string;
-    gateway_name: string;
-    sender_id: string;
-    api_key: string;
+    displayName: string;
+    gatewayName: string;
+    senderID: string;
+    apiKey: string;
     username: string;
     password: string;
-    status: 0 | 1
+    status: boolean;
 }
-  
