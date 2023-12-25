@@ -23,12 +23,15 @@ export class SmsService {
     if (smsProvider[0].gateway_name.toLowerCase() === 'mtech'){
       return this.sendSMS(request)
     } 
+    if (smsProvider[0].gateway_name.toLowerCase() === 'nanobox'){
+      return this.sendSMSNanoBox(request)
+    } 
   }
 
   async saveSettings(_request: SaveSettingsDTO): Promise<any> {
     try {
       if (_request.settings_id) {
-        const is_settings_id = await this.prisma.settings.findUnique({
+        let is_settings_id = await this.prisma.settings.findUnique({
           where: {
             id: _request.settings_id,
           },
@@ -45,18 +48,73 @@ export class SmsService {
             ..._request,
           },
         });
+         is_settings_id = await this.prisma.settings.findUnique({
+          where: {
+            id: _request.settings_id,
+          },
+        });
+        if(Number(is_settings_id.status) === 1) {
+        await this.prisma.settings.updateMany({
+            where: {
+              id: {
+                not: _request.settings_id,
+              },
+            },
+            data: {
+              status:0
+            }
+          });
+        }
       } else {
-        await this.prisma.settings.create({
+        const newSetting = await this.prisma.settings.create({
           data: {
             ..._request,
           },
         });
+        if(newSetting.status === 1) {
+          await this.prisma.settings.updateMany({
+            where: {
+              id: {
+                not: newSetting.id,
+              },
+            },
+            data: {
+              status:0
+            }
+          });
+        }
       }
     } catch (error) {
       throw new Error(`Failed to send SMS: ${error.message}`);
     }
   }
 
+  async sendSMSNanoBox(request: any): Promise<any> {
+    try {
+      const response = await axios.post(
+        'https://vas.interconnectnigeria.com/nanobox/api/v1/sms/mt',
+        {
+          sourceMsisdn: "CubebetNG",
+          destinationMsisdn: [
+            request.from
+          ],
+          allowDelivery: true,
+          messageContent: request.text,
+          routeAuth: {
+              systemId: "93C5CE6B1"
+          }
+        },{
+          headers:{
+            'authorization':`BEARER ${process.env.NANOBOX_AUTH_KEY}`
+          }
+        }
+      );
+
+      return { message: response.data };
+    } catch (error) {
+      throw new Error(`Failed to send SMS: ${error.message}`);
+    }
+  }
   async sendSMSYournotify(request: any): Promise<any> {
     try {
       const response = await axios.post(
