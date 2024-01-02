@@ -10,7 +10,7 @@ service SmsService {
 
 message SaveSettingsRequest {
   string settings_id = 1;
-  boolean enable = 2;
+  bool enable = 2;
   string display_name = 3;
   string gateway_name = 4;
   string sender_id = 5;
