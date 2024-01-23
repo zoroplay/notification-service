@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Controller } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
+
 import { SmsService } from './sms.service';
 import { CreateSmDto, SMS_SERVICE_NAME } from './dto/create-sm.dto';
 import { SendSMSDTO } from './dto/send-sms.dto';
@@ -36,6 +37,7 @@ export class SmsController {
 
   @GrpcMethod(SMS_SERVICE_NAME,'deliveryReport')
   async deliveryReport(deliveryReport: SendSMSDTO) {
+
     return this.smsService.getDeliveryReport(deliveryReport);
   }
 }
