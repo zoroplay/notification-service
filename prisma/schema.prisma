@@ -10,6 +10,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Sms_Records {
+  id              Int      @id @default(autoincrement())
+  provider        String
+  sender_id       String
+  receiver_number String[]
+  message         String
+  status          Boolean
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+}
+
 model Settings {
   id           Int      @id @default(autoincrement())
   clientId     Int      @map("client_id")

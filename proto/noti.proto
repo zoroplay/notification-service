@@ -5,6 +5,8 @@ package notification;
 service NotificationService {
   rpc SaveSettings (SaveSettingsRequest) returns (SaveSettingsResponse);
   rpc SendSms (SendSmsRequest) returns (SendSmsResponse);
+  rpc SendOtp (SendSmsRequest) returns (SendSmsResponse);
+  rpc verifyOtp (SendSmsRequest) returns (SendSmsResponse);
   rpc GetDeliveryReport (DeliveryReportRequest) returns (DeliveryReportResponse);
 }
 
@@ -33,7 +35,7 @@ message SendSmsRequest {
   string name = 4;
   string from = 5;
   string status = 6;
-  string list = 7;
+  repeated string lists = 7;
   string schedule = 8;
   string channel = 9;
   string mode = 10;

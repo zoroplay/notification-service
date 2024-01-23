@@ -6,7 +6,7 @@ export class SendSMSDTO {
   name!: string;
   from!: string;
   status!: string;
-  list!: any;
+  lists: string[];
   schedule!: string;
   channel!: string;
   campaign_type!: string;
