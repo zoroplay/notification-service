@@ -11,28 +11,28 @@ datasource db {
 }
 
 model Sms_Records {
-  id              Int      @id @default(autoincrement())
-  provider        String
-  sender_id       String
-  receiver_number String[]
-  message         String
-  status          Boolean
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id             Int      @id @default(autoincrement())
+  provider       String
+  senderID       String
+  receiverNumber String[]
+  message        String
+  status         Boolean
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 }
 
 model Settings {
-  id           Int      @id @default(autoincrement())
-  clientId     Int      @map("client_id")
-  display_name String
-  gateway_name String
-  sender_id    String
-  api_key      String
-  username     String
-  password     String
-  status       Boolean  @default(false)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id          Int      @id @default(autoincrement())
+  clientID    Int      @map("client_id")
+  displayName String
+  gatewayName String
+  senderID    String
+  apiKey      String
+  username    String
+  password    String
+  status      Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("sms_provider_settings")
 }

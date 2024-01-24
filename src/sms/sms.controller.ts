@@ -5,7 +5,7 @@ import { GrpcMethod } from '@nestjs/microservices';
 import { SmsService } from './sms.service';
 import { CreateSmDto, SMS_SERVICE_NAME } from './dto/create-sm.dto';
 import { SendSMSDTO } from './dto/send-sms.dto';
-import { SaveSettingsRequest, SaveSettingsResponse, SendSmsRequest, SendSmsResponse } from 'src/noti.pb';
+import { SaveSettingsRequest, SaveSettingsResponse, SendOtpRequest, SendSmsRequest, SendSmsResponse, VerifyOtpRequest } from 'src/noti.pb';
 
 @Controller()
 export class SmsController {
@@ -17,12 +17,12 @@ export class SmsController {
   }
 
   @GrpcMethod(SMS_SERVICE_NAME, 'sendOtp')
-  async sendOTP(smsRequest: SendSmsRequest): Promise<SendSmsResponse> {
+  async sendOTP(smsRequest: SendOtpRequest): Promise<SendSmsResponse> {
     return this.smsService.handleOTP(smsRequest);
   }
 
   @GrpcMethod(SMS_SERVICE_NAME, 'verifyOtp')
-  async verifyOtp(smsRequest: SendSmsRequest): Promise<SendSmsResponse> {
+  async verifyOtp(smsRequest: VerifyOtpRequest): Promise<SendSmsResponse> {
     return this.smsService.handleVerifyOTP(smsRequest);
   }
 
