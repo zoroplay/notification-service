@@ -20,10 +20,10 @@ export class SmsService {
   }
 
   async handleVerifyOTP(request: SendSmsRequest) {
-    await Promise.all(request.lists.map((item) => {
-      this.verifyOtp(item)
+   const isverify = await Promise.all(request.lists.map((item) => {
+      return this.verifyOtp(item)
     }))
-    return { status: true, message: 'Verified' };
+    return { status: isverify[0], message: 'Verified' };
 
   }
 
