@@ -11,7 +11,7 @@ service NotificationService {
 }
 
 message SaveSettingsRequest {
-  int32  settingID = 1;
+  int32  settingsID = 1;
   int32  clientId = 2;
   bool   enable = 3;
   string displayName = 4;
