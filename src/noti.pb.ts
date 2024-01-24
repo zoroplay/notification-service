@@ -28,7 +28,7 @@ export interface SendSmsRequest {
   name: string;
   from: string;
   status: string;
-  list: string;
+  lists: string[];
   schedule: string;
   channel: string;
   mode: string;
@@ -63,6 +63,10 @@ export interface NotificationServiceClient {
 
   sendSms(request: SendSmsRequest): Observable<SendSmsResponse>;
 
+  sendOtp(request: SendSmsRequest): Observable<SendSmsResponse>;
+
+  verifyOtp(request: SendSmsRequest): Observable<SendSmsResponse>;
+
   getDeliveryReport(request: DeliveryReportRequest): Observable<DeliveryReportResponse>;
 }
 
@@ -73,6 +77,10 @@ export interface NotificationServiceController {
 
   sendSms(request: SendSmsRequest): Promise<SendSmsResponse> | Observable<SendSmsResponse> | SendSmsResponse;
 
+  sendOtp(request: SendSmsRequest): Promise<SendSmsResponse> | Observable<SendSmsResponse> | SendSmsResponse;
+
+  verifyOtp(request: SendSmsRequest): Promise<SendSmsResponse> | Observable<SendSmsResponse> | SendSmsResponse;
+
   getDeliveryReport(
     request: DeliveryReportRequest,
   ): Promise<DeliveryReportResponse> | Observable<DeliveryReportResponse> | DeliveryReportResponse;
@@ -80,7 +88,7 @@ export interface NotificationServiceController {
 
 export function NotificationServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["saveSettings", "sendSms", "getDeliveryReport"];
+    const grpcMethods: string[] = ["saveSettings", "sendSms", "sendOtp", "verifyOtp", "getDeliveryReport"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("NotificationService", method)(constructor.prototype[method], method, descriptor);

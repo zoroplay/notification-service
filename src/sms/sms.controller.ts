@@ -11,31 +11,32 @@ import { SaveSettingsRequest, SaveSettingsResponse, SendSmsRequest, SendSmsRespo
 export class SmsController {
   constructor(private readonly smsService: SmsService) { }
 
-  @GrpcMethod(SMS_SERVICE_NAME,'createSms')
+  @GrpcMethod(SMS_SERVICE_NAME, 'createSms')
   createSms(createSmDto: CreateSmDto) {
     return this.smsService.create(createSmDto);
   }
 
-  @GrpcMethod(SMS_SERVICE_NAME,'sendOtp')
+  @GrpcMethod(SMS_SERVICE_NAME, 'sendOtp')
   async sendOTP(smsRequest: SendSmsRequest): Promise<SendSmsResponse> {
     return this.smsService.handleOTP(smsRequest);
   }
-  @GrpcMethod(SMS_SERVICE_NAME,'verifyOtp')
+
+  @GrpcMethod(SMS_SERVICE_NAME, 'verifyOtp')
   async verifyOtp(smsRequest: SendSmsRequest): Promise<SendSmsResponse> {
     return this.smsService.handleVerifyOTP(smsRequest);
   }
 
-  @GrpcMethod(SMS_SERVICE_NAME,'sendSms')
+  @GrpcMethod(SMS_SERVICE_NAME, 'sendSms')
   async sendSms(smsRequest: SendSmsRequest): Promise<SendSmsResponse> {
     return this.smsService.handleSms(smsRequest);
   }
 
-  @GrpcMethod(SMS_SERVICE_NAME,'saveSettings')
-  async saveSettings( saveSettings: SaveSettingsRequest): Promise<SaveSettingsResponse> {
+  @GrpcMethod(SMS_SERVICE_NAME, 'saveSettings')
+  async saveSettings(saveSettings: SaveSettingsRequest): Promise<SaveSettingsResponse> {
     return this.smsService.saveSettings(saveSettings);
   }
 
-  @GrpcMethod(SMS_SERVICE_NAME,'deliveryReport')
+  @GrpcMethod(SMS_SERVICE_NAME, 'deliveryReport')
   async deliveryReport(deliveryReport: SendSMSDTO) {
 
     return this.smsService.getDeliveryReport(deliveryReport);
