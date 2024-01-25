@@ -12,3 +12,9 @@ export class SendSMSDTO {
   campaign_type!: string;
   clientId: number;
 }
+
+export interface MessageData {
+  receiver: string;
+  sender: string;
+  message: string;
+}

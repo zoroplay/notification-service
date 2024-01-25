@@ -4,89 +4,28 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateSmDto } from './dto/create-sm.dto';
 import { UpdateSmDto } from './dto/update-sm.dto';
 import axios from 'axios';
-import { SaveSettingsDTO } from './dto/sms-settings.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SaveSettingsRequest, SaveSettingsResponse, SendOtpRequest, SendSmsRequest, SendSmsResponse, VerifyOtpRequest } from 'src/noti.pb';
 import { RedisStore } from 'cache-manager-redis-store';
-import { SendSMSDTO } from './dto/send-sms.dto';
+import { MessageData, SendSMSDTO } from './dto/send-sms.dto';
 import { Settings } from '@prisma/client';
+import {
+  SaveSettingsRequest,
+  SaveSettingsResponse,
+  SendOtpRequest, SendSmsRequest,
+  VerifyOtpRequest,
+  GetSettingsRequest,
+  SettingData,
+} from 'src/proto/noti.pb';
 
 @Injectable()
 export class SmsService {
-  private readonly redisStore!: RedisStore;
-  constructor(private prisma: PrismaService, @Inject(CACHE_MANAGER) private cache: Cache) {
-    this.redisStore = cache.store as unknown as RedisStore;
-  }
-
-  async handleVerifyOTP(request: VerifyOtpRequest) {
-    const key = `otp:${request.phoneNumber}`;
-    const client = this.redisStore.getClient();
-
-    const storedOtp = await client.get(key);
-
-    if (storedOtp === request.otpCode) {
-      await client.del(key); // Delete OTP after successful verification
-      return { status: true, message: 'Verified' };
-    }
-
-    return { status: false, message: 'Wrong Otp Code' };
-
-  }
-
-  async handleOTP(request: SendOtpRequest) {
-
-    const smsProvider = await this.prisma.settings.findFirst({
-      where: {
-        status: true,
-        clientID: request.clientID
-      }
-    })
-
-    if (smsProvider) {
-      switch (smsProvider.gatewayName) {
-        case 'yournotify':
-          this.sendOTPYournotify(request, smsProvider);
-          break;
-        case 'mtech':
-          return this.sendOtp(request);
-        case 'nanobox':
-          return this.sendOTPNanoBox(request,smsProvider);
-        default:
-          break;
-      }
-    } else {
-
-
-    }
-  }
-
-  async handleSms(request: SendSmsRequest) {
-
-    const smsProvider = await this.prisma.settings.findFirst({
-      where: {
-        status: true,
-        clientID: request.clientID
-      }
-    })
-
-    if (smsProvider) {
-      switch (smsProvider.gatewayName) {
-        case 'yournotify':
-          this.sendSMSYournotify(request);
-          break;
-        case 'mtech':
-          return this.sendSMS(request);
-        case 'nanobox':
-          return this.sendSMSNanoBox(request);
-        default:
-          break;
-      }
-    } else {
-
-
-    }
+  constructor(
+    private prisma: PrismaService,
+    @Inject(CACHE_MANAGER)
+    private cache: Cache
+  ) {
   }
 
   async saveSettings(_request: SaveSettingsRequest): Promise<SaveSettingsResponse> {
@@ -110,7 +49,7 @@ export class SmsService {
         });
 
         if (!is_settings_id)
-          throw new Error(`The Id sent does not exist in database, verify`);
+          return { status: false, message: `The Id sent does not exist in database, verify` }
 
         await this.prisma.settings.update({
           where: {
@@ -156,259 +95,214 @@ export class SmsService {
     }
   }
 
+  async getSettings({ clientId }: GetSettingsRequest): Promise<any> {
 
-  async sendOTPNanoBox(request: SendOtpRequest, smsProvider: Settings): Promise<any> {
+    let data = [] as SettingData[];
+    const settings = await this.prisma.settings.findMany({
+      where: { clientID: clientId },
+    });
+
+    // build data
+    if (settings.length) {
+      for (const setting of settings) {
+        data.push({
+          id: setting.id,
+          senderID: setting.senderID,
+          displayName: setting.displayName,
+          gatewayName: setting.gatewayName,
+          apiKey: setting.apiKey,
+          status: setting.status,
+          username: setting.username,
+          password: setting.password,
+        })
+      }
+    }
+
+    return { status: true, message: 'Settings retrieved successfully', data };
+  }
+
+  async handleVerifyOTP(request: VerifyOtpRequest) {
+    const key = `otp:${request.phoneNumber}`;
+
+    const storedOtp = await this.cache.get(key);
+
+    if (storedOtp === request.otpCode) {
+      await this.cache.del(key); // Delete OTP after successful verification
+      return { status: true, message: 'Verified' };
+    }
+
+    return { status: false, message: 'Wrong Otp Code' };
+
+  }
+
+  async handleOTP(request: SendOtpRequest) {
+
+    const smsProvider = await this.prisma.settings.findFirst({
+      where: {
+        status: true,
+        clientID: request.clientID
+      }
+    })
+
+    if (smsProvider) {
+      const otp = await this.generateOtp(request.phoneNumber, request.clientID);
+      const data = {
+        sender: smsProvider.senderID,
+        receiver: request.phoneNumber,
+        message: `Your ${smsProvider.gatewayName} confirmation code is ${otp}`
+      }
+
+      switch (smsProvider.gatewayName) {
+        case 'yournotify':
+          return this.sendMessageYourNotify(data, smsProvider);
+        case 'mtech':
+          return this.sendMessageMetch(data, smsProvider);
+        case 'nanobox':
+          return this.sendMessageNanoBox(data, smsProvider);
+        default:
+          break;
+      }
+    } else {
+
+
+    }
+  }
+
+  async handleSms(request: SendSmsRequest) {
+
+    const smsProvider = await this.prisma.settings.findFirst({
+      where: {
+        status: true,
+        clientID: request.clientID
+      }
+    })
+
+    if (smsProvider) {
+      const data = {
+        sender: smsProvider.senderID,
+        receiver: JSON.stringify(request.phoneNumbers),
+        message: request.text
+      }
+      switch (smsProvider.gatewayName) {
+        case 'yournotify':
+          return this.sendMessageYourNotify(data, smsProvider);
+        case 'mtech':
+          return this.sendMessageMetch(data, smsProvider);
+        case 'nanobox':
+          return this.sendMessageNanoBox(data, smsProvider);
+        default:
+          break;
+      }
+    } else {
+
+
+    }
+  }
+
+  async sendMessageNanoBox(messageData: MessageData, smsProvider: SettingData): Promise<any> {
     try {
 
-
-      const otp = await this.generateOtp(request.phoneNumber)
       // const otp = await Promise.all(request.lists.map((item) => {
       // }))
-        const response  : {
-          status: boolean;
-          data: any;
-  
-        }
+      const response: {
+        status: boolean;
+        data: any;
+      }
         = await axios.post(
           'https://vas.interconnectnigeria.com/nanobox/api/v1/sms/mt',
           {
-            sourceMsisdn: 'CubebetNG',
-            destinationMsisdn: request.phoneNumber,
+            sourceMsisdn: messageData.sender,
+            destinationMsisdn: messageData.receiver,
             allowDelivery: true,
-            messageContent: `Your ${smsProvider.gatewayName} confirmation code is ${otp}`,
+            messageContent: messageData.message,
             routeAuth: {
-              systemId: process.env.NANOBOX_SYSTEMID,
+              systemId: smsProvider.username,
             },
           },
           {
             headers: {
-              authorization: `BEARER ${process.env.NANOBOX_AUTH_KEY}`,
+              authorization: `BEARER ${smsProvider.apiKey}`,
             },
           },
-          )
+        )
 
-    
-        await this.prisma.sms_Records.create({
-          data: {
-            provider: 'nanobox',
-            status: Boolean(response.status),
-            senderID: 'CubebetNG',
-            receiverNumber: [request.phoneNumber],
-            message: response.data
+      if (response.status === false) {
+        // save message as failed
+        this.saveMessage({ ...messageData, status: false }, smsProvider);
+        return { status: false, message: response.data.message }
+      } else {
+        // save message as success
+        this.saveMessage({ ...messageData, status: true }, smsProvider);
+        return { status: true, message: response.data };
+      }
 
-
-          }
-        })
-        if(response.status === false ) return  { status: false, message: response.data.message }
-  
-      return { status: true, message: response.data };
-    } catch (error) {
-      throw new Error(`Failed to send SMS: ${error.message}`);
-    }
-  }
-
-  async sendSMSNanoBox(request: SendSmsRequest): Promise<any> {
-    try {
-      const response : {
-        status: boolean;
-        data: any;
-
-      } = await axios.post(
-        'https://vas.interconnectnigeria.com/nanobox/api/v1/sms/mt',
-        {
-          sourceMsisdn: 'CubebetNG',
-          destinationMsisdn: request.phoneNumbers,
-          allowDelivery: true,
-          messageContent: `Hello ${request.name}, welcome to the CubebetNG family. Your betting code with Care policy has been activated`,
-          routeAuth: {
-            systemId: process.env.NANOBOX_SYSTEMID,
-          },
-        },
-        {
-          headers: {
-            authorization: `BEARER ${process.env.NANOBOX_AUTH_KEY}`,
-          },
-        },
-      );
-
-      await this.prisma.sms_Records.create({
-        data: {
-          provider: 'nanobox',
-          status: Boolean(response.status),
-          senderID: 'CubebetNG',
-          receiverNumber: request.phoneNumbers,
-          message: response.data
-        }
-      })
-      if(response.status === false ) return  { status: false, message: response.data.message }
-
-      return {status: false, message: response.data };
-    } catch (error) {
-      throw new Error(`Failed to send SMS: ${error.message}`);
-    }
-  }
-
-  async sendOTPYournotify(request: SendOtpRequest, smsProvider: Settings): Promise<any> {
-    try {
-      const otp = await this.generateOtp(request.phoneNumber)
-
-        const response: {status: string, message: string, data: any} = await axios.post(
-          'https://api.yournotify.com/campaigns/sms',
-          {
-            name: smsProvider.displayName,
-            from: 'yournotify',
-            text: `Your ${smsProvider.gatewayName} confirmation code is ${otp}`,
-            status: 'running',
-            lists: [request.phoneNumber],
-            channel: "sms",
-          }, {
-          headers: {
-            'authorization': `BEARER ${process.env.YOURNOTIFY_AUTH_KEY}`
-          }
-        }
-
-        );
-        await this.prisma.sms_Records.create({
-          data: {
-            provider: 'yournotify',
-            status: String(response.status) === 'success' ? true : false,
-            senderID: 'yournotify',
-            receiverNumber: [request.phoneNumber],
-            message: response.data
-
-          }
-        })
-
-
-        if(response.status === 'failed' ) return  { status: false, message: response.message }
-
-
-      return { status: true, message: response.data };
     } catch (error) {
       return { status: false, message: `Failed to send OTP: ${error.message}` }
     }
   }
-  async sendSMSYournotify(request: SendSmsRequest): Promise<any> {
+
+  async sendMessageYourNotify(messageData: MessageData, smsProvider: SettingData): Promise<any> {
     try {
-      const response : {status: string, message: string, data: any} = await axios.post(
-        'https://api.yournotify.com/campaigns/sms',
-        {
-          name: request.name,
-          from: 'yournotify',
-          text: request.text,
-          status: 'running',
-          lists: request.phoneNumbers,
-          channel: "sms",
-        }, {
+
+      const payload = {
+        name: smsProvider.displayName,
+        from: messageData.sender,
+        text: messageData.message,
+        status: 'running',
+        lists: [messageData.receiver],
+        channel: "sms",
+      }
+      console.log(payload);
+      const response: { status: string, message: string, data: any } = await axios.post(
+        'https://api.yournotify.com/campaigns/sms', payload, {
         headers: {
-          'authorization': `BEARER ${process.env.YOURNOTIFY_AUTH_KEY}`
+          'authorization': `BEARER ${smsProvider.apiKey}`
         }
       }
 
       );
-      await this.prisma.sms_Records.create({
-        data: {
-          provider: 'yournotify',
-          status: response.status === 'success' ? true : false,          senderID: 'yournotify',
-          receiverNumber: request.phoneNumbers,
-          message: response.data
 
-        }
-      })
-      if(response.status === 'failed' ) return  { status: false, message: response.message }
-
-      return { status: true, message: response.data };
+      if (response.status === 'failed') {
+        // save message as failed
+        this.saveMessage({ ...messageData, status: false }, smsProvider);
+        return { status: false, message: response.message }
+      } else {
+        // save message as success
+        this.saveMessage({ ...messageData, status: true }, smsProvider);
+        return { status: true, message: response.data };
+      }
     } catch (error) {
-      return { status: false, message: `Failed to send SMS: ${error.message}` }
+      return { status: false, message: `Failed to send OTP: ${error.message}` }
     }
   }
 
-  async sendSMS(request: SendSmsRequest): Promise<any> {
+  async sendMessageMetch(request: MessageData, smsProvider: SettingData): Promise<any> {
     try {
-      const possibleData = [
-        'Jarabet',
-        'Maxbet247',
-        'Citybet.bet',
-        'Zukabet',
-        'Cefabet',
-        'Raimax.bet',
-        'Staging',
-        'CitybetNig',
-        'frapapa',
-      ];
-      if (!possibleData.includes(request.senderID)) {
-        throw new Error(`A valid sender_id has not been passed`);
-      }
+
       const response = await axios.post(
         'http://50.200.97.100:8099/sendsms',
         {
-          msisdn: request.msisdn,
-          text: request.text,
-          senderId: request.senderID,
+          msisdn: request.receiver,
+          text: request.message,
+          senderId: request.sender,
         },
         {
           headers: {
-            'X-Client-Username': process.env.MTECH_CLIENT_USERNAME,
-            'X-Client-Key': process.env.MTECH_CLIENT_KEY,
+            'X-Client-Username': smsProvider.username,
+            'X-Client-Key': smsProvider.apiKey,
           },
         },
       );
+
+      console.log(response);
 
       await this.prisma.sms_Records.create({
         data: {
           provider: 'mtech',
           status: Boolean(response.status),
-          senderID: request.senderID,
-          receiverNumber: [],
-          message: response.data
-
-        }
-      })
-
-      return { status: true, message: response.data };
-    } catch (error) {
-      return { status: false, message: `Failed to send SMS: ${error.message}` }
-    }
-  }
-  async sendOTP(request: SendSmsRequest): Promise<any> {
-    try {
-
-      const possibleData = [
-        'Jarabet',
-        'Maxbet247',
-        'Citybet.bet',
-        'Zukabet',
-        'Cefabet',
-        'Raimax.bet',
-        'Staging',
-        'CitybetNig',
-        'frapapa',
-      ];
-      if (!possibleData.includes(request.senderID)) {
-        throw new Error(`A valid sender_id has not been passed`);
-      }
-      const response = await axios.post(
-        'http://50.200.97.100:8099/sendsms',
-        {
-          msisdn: request.msisdn,
-          text: request.text,
-          senderId: request.senderID,
-        },
-        {
-          headers: {
-            'X-Client-Username': process.env.MTECH_CLIENT_USERNAME,
-            'X-Client-Key': process.env.MTECH_CLIENT_KEY,
-          },
-        },
-      );
-
-      await this.prisma.sms_Records.create({
-        data: {
-          provider: 'mtech',
-          status: Boolean(response.status),
-          senderID: request.senderID,
-          receiverNumber: [],
-          message: response.data
+          senderID: request.sender,
+          receiverNumber: request.receiver,
+          message: request.message
 
         }
       })
@@ -436,28 +330,38 @@ export class SmsService {
 
       return response;
     } catch (error) {
-      throw new Error(`Failed to get Delivery report: ${error.message}`);
+      return { status: false, message: `Failed to get Delivery report: ${error.message}` }
     }
   }
 
-  async generateOtp(phoneNumber: string): Promise<string> {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString().substring(0, 6); // Generate a 6-digit OTP
-    const key = `otp:${phoneNumber}`;
-    const client = this.redisStore.getClient();
+  async saveMessage(data, provider) {
+    await this.prisma.sms_Records.create({
+      data: {
+        provider: provider.gatewayName,
+        status: Boolean(data.status),
+        senderID: data.sender,
+        receiverNumber: data.reciever,
+        message: data.message
+      }
+    })
+  }
 
-    await client.set(key, otp); // Set OTP with a 5-minute expiry time
+  async generateOtp(phoneNumber: string, clientId: number): Promise<string> {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString().substring(0, 6); // Generate a 6-digit OTP
+    const key = `otp:${phoneNumber}:${clientId}`;
+
+    await this.cache.set(key, otp); // Set OTP with a 5-minute expiry time
 
     return otp;
   }
 
-  async verifyOtp(phoneNumber: string): Promise<boolean> {
-    const key = `otp:${phoneNumber}`;
-    const client = this.redisStore.getClient();
+  async verifyOtp(phoneNumber: string, clientId: number): Promise<boolean> {
+    const key = `otp:${phoneNumber}:${clientId}`;
 
-    const storedOtp = await client.get(key);
+    const storedOtp = await this.cache.get(key);
 
     if (storedOtp) {
-      await client.del(key); // Delete OTP after successful verification
+      await this.cache.del(key); // Delete OTP after successful verification
       return true;
     }
 

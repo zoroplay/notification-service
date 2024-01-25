@@ -6,6 +6,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { CacheModule, CacheModuleAsyncOptions } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { redisStore } from "cache-manager-redis-store";
+import { SmsModule } from "./sms/sms.module";
 
 
 export const RedisOptions: CacheModuleAsyncOptions = {
@@ -30,13 +31,13 @@ export const RedisOptions: CacheModuleAsyncOptions = {
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.registerAsync(RedisOptions),
-
+    SmsModule
   ],
   controllers: [AppController],
   providers: [
     AppService,
     PrismaService,
-    
+
   ],
 })
 export class AppModule { }
