@@ -1,12 +1,18 @@
 FROM node:18-alpine
 RUN mkdir -p /app
 WORKDIR /app
+COPY package*.json ./
+COPY prisma ./prisma/
+COPY entrypoint.sh /app/entrypoint.sh
 COPY . .
-RUN apk add --update python3 make g++ && rm -rf /var/cache/apk/*
+
+RUN npm i -g @nestjs/cli
 RUN npm install
-RUN npx prisma generate
-RUN npx prisma db push
+
+RUN chmod +x /app/entrypoint.sh
+
 RUN npm run build
 EXPOSE 80
 EXPOSE 5000
+ENTRYPOINT [ "/app/entrypoint.sh" ]
 CMD ["npm", "start"]
