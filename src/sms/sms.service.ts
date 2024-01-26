@@ -226,7 +226,7 @@ export class SmsService {
           },
         )
 
-      if (response.status === false) {
+      if (response.data.status === false) {
         messageData.status = false;
         // save message as failed
         this.saveMessage(messageData, smsProvider);
@@ -235,10 +235,11 @@ export class SmsService {
         messageData.status = true;
         // save message as success
         this.saveMessage(messageData, smsProvider);
-        return { status: true, message: response.data };
+        return { status: true, message: response.data.message };
       }
 
     } catch (error) {
+      console.log(error.message);
       return { status: false, message: `Failed to send OTP: ${error.message}` }
     }
   }
@@ -263,18 +264,19 @@ export class SmsService {
       });
 
 
-      if (response.status === 'failed') {
+      if (response.data.status === 'failed') {
         messageData.status = false;
         // save message as failed
         this.saveMessage(messageData, smsProvider);
-        return { status: false, message: response.message }
+        return { status: false, message: response.data.message }
       } else {
         messageData.status = true;
         // save message as success
         this.saveMessage(messageData, smsProvider);
-        return { status: true, message: response.data };
+        return { status: true, message: response.data.data };
       }
     } catch (error) {
+      console.log(error.message)
       return { status: false, message: `Failed to send OTP: ${error.message}` }
     }
   }
