@@ -222,7 +222,7 @@ export class SmsService {
           },
           {
             headers: {
-              'Authorization': `Bearer ${smsProvider.apiKey}`
+              'Authorization': `Bearer NB_liveRjRFRERBODAyMkJGMkUyOTZFQkNCN0NCRTIwMkZDNDEzMEMxODlDODI4MDc3RUFDMEUyRDRGRUUyNDNFRkYyRQ==`
             },
           },
         )
@@ -258,7 +258,7 @@ export class SmsService {
       const response: { status: string, message: string, data: any } = await axios.post(
         'https://api.yournotify.com/campaigns/sms', payload, {
         headers: {
-          'Authorization': `Bearer ${smsProvider.apiKey}`
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYyYjFiZTMyLWIzNTUtNGY5Yi1iOTAyLWQ2N2IzZmRlMTI5Yi0xMDY1IiwiaWF0IjoxNjg3ODYzMjMwLCJleHAiOjQ4NDE0NjMyMzB9.pmGHzwdUhSxgNX58zYMmuQd2j-TgCKtKLyTBIcMhT88`
         }
       }
 
