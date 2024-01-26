@@ -145,6 +145,7 @@ export class SmsService {
     })
 
     if (smsProvider) {
+      console.log(smsProvider)
       const otp = await this.generateOtp(request.phoneNumber, request.clientID);
       const data = {
         sender: smsProvider.senderID,
@@ -221,7 +222,7 @@ export class SmsService {
           },
           {
             headers: {
-              authorization: `BEARER ${smsProvider.apiKey}`,
+              'Authorization': `Bearer ${smsProvider.apiKey}`
             },
           },
         )
@@ -256,7 +257,7 @@ export class SmsService {
       const response: { status: string, message: string, data: any } = await axios.post(
         'https://api.yournotify.com/campaigns/sms', payload, {
         headers: {
-          'authorization': `BEARER ${smsProvider.apiKey}`
+          'Authorization': `Bearer ${smsProvider.apiKey}`
         }
       }
 
