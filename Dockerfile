@@ -4,7 +4,7 @@ WORKDIR /app
 COPY . .
 RUN apk add --update python3 make g++ && rm -rf /var/cache/apk/*
 RUN npm install
-RUN npm run db:push
+RUN npx prisma generate
 RUN npm run build
 EXPOSE 80
 EXPOSE 5000
