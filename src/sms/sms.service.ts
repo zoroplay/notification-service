@@ -145,7 +145,6 @@ export class SmsService {
     })
 
     if (smsProvider) {
-      console.log(smsProvider)
       const otp = await this.generateOtp(request.phoneNumber, request.clientID);
       const data = {
         sender: smsProvider.senderID,
@@ -202,6 +201,7 @@ export class SmsService {
 
   async sendMessageNanoBox(messageData: MessageData, smsProvider: SettingData): Promise<any> {
     try {
+      console.log(smsProvider)
 
       // const otp = await Promise.all(request.lists.map((item) => {
       // }))
@@ -244,6 +244,7 @@ export class SmsService {
 
   async sendMessageYourNotify(messageData: MessageData, smsProvider: SettingData): Promise<any> {
     try {
+      console.log(smsProvider)
 
       const payload = {
         name: smsProvider.displayName,
