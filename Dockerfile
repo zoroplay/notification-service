@@ -6,7 +6,6 @@ COPY prisma ./prisma/
 COPY entrypoint.sh /app/entrypoint.sh
 COPY . .
 
-RUN npm i -g @nestjs/cli
 RUN npm install
 
 RUN chmod +x /app/entrypoint.sh
