@@ -227,12 +227,14 @@ export class SmsService {
         )
 
       if (response.status === false) {
+        messageData.status = false;
         // save message as failed
-        this.saveMessage({ ...messageData, status: false }, smsProvider);
+        this.saveMessage(messageData, smsProvider);
         return { status: false, message: response.data.message }
       } else {
+        messageData.status = true;
         // save message as success
-        this.saveMessage({ ...messageData, status: true }, smsProvider);
+        this.saveMessage(messageData, smsProvider);
         return { status: true, message: response.data };
       }
 
@@ -252,23 +254,24 @@ export class SmsService {
         lists: [messageData.receiver],
         channel: "sms",
       }
-      console.log(payload);
+
       const response: { status: string, message: string, data: any } = await axios.post(
         'https://api.yournotify.com/campaigns/sms', payload, {
         headers: {
           'Authorization': `Bearer ${smsProvider.apiKey}`
         }
-      }
+      });
 
-      );
 
       if (response.status === 'failed') {
+        messageData.status = false;
         // save message as failed
-        this.saveMessage({ ...messageData, status: false }, smsProvider);
+        this.saveMessage(messageData, smsProvider);
         return { status: false, message: response.message }
       } else {
+        messageData.status = true;
         // save message as success
-        this.saveMessage({ ...messageData, status: true }, smsProvider);
+        this.saveMessage(messageData, smsProvider);
         return { status: true, message: response.data };
       }
     } catch (error) {
@@ -340,7 +343,7 @@ export class SmsService {
         provider: provider.gatewayName,
         status: Boolean(data.status),
         senderID: data.sender,
-        receiverNumber: data.reciever,
+        receiverNumber: data.receiver,
         message: data.message
       }
     })
