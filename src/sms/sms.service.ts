@@ -201,7 +201,6 @@ export class SmsService {
 
   async sendMessageNanoBox(messageData: MessageData, smsProvider: SettingData): Promise<any> {
     try {
-      console.log(smsProvider)
 
       // const otp = await Promise.all(request.lists.map((item) => {
       // }))
@@ -222,7 +221,7 @@ export class SmsService {
           },
           {
             headers: {
-              'Authorization': `Bearer NB_liveRjRFRERBODAyMkJGMkUyOTZFQkNCN0NCRTIwMkZDNDEzMEMxODlDODI4MDc3RUFDMEUyRDRGRUUyNDNFRkYyRQ==`
+              'Authorization': `Bearer ${smsProvider.apiKey}`
             },
           },
         )
@@ -244,7 +243,6 @@ export class SmsService {
 
   async sendMessageYourNotify(messageData: MessageData, smsProvider: SettingData): Promise<any> {
     try {
-      console.log(smsProvider)
 
       const payload = {
         name: smsProvider.displayName,
@@ -258,7 +256,7 @@ export class SmsService {
       const response: { status: string, message: string, data: any } = await axios.post(
         'https://api.yournotify.com/campaigns/sms', payload, {
         headers: {
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImYyYjFiZTMyLWIzNTUtNGY5Yi1iOTAyLWQ2N2IzZmRlMTI5Yi0xMDY1IiwiaWF0IjoxNjg3ODYzMjMwLCJleHAiOjQ4NDE0NjMyMzB9.pmGHzwdUhSxgNX58zYMmuQd2j-TgCKtKLyTBIcMhT88`
+          'Authorization': `Bearer ${smsProvider.apiKey}`
         }
       }
 
