@@ -150,7 +150,7 @@ export class SmsService {
       const data = {
         sender: smsProvider.senderID,
         receiver: request.phoneNumber,
-        message: `Your ${smsProvider.gatewayName} confirmation code is ${otp}`
+        message: `Your ${smsProvider.senderID} confirmation code is ${otp}`
       }
 
       switch (smsProvider.gatewayName) {
