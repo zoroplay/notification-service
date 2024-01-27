@@ -5,32 +5,37 @@ import { AppService } from "./app.service";
 import { PrismaService } from './prisma/prisma.service';
 import { CacheModule, CacheModuleAsyncOptions } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { redisStore } from "cache-manager-redis-store";
+import * as redisStore from "cache-manager-redis-store";
 import { SmsModule } from "./sms/sms.module";
 
-
-export const RedisOptions: CacheModuleAsyncOptions = {
-  isGlobal: true,
-  imports: [ConfigModule],
-  useFactory: async (configService: ConfigService) => {
-    const store = await redisStore({
-      socket: {
-        host: configService.get<string>('REDIS_HOST'),
-        port: parseInt(configService.get<string>('REDIS_PORT')!),
-      },
-    });
-    return {
-      store: () => store,
-      ttl: 30
-    };
-  },
-  inject: [ConfigService],
-};
+const configService = new ConfigService();
+// export const RedisOptions: CacheModuleAsyncOptions = {
+//   isGlobal: true,
+//   imports: [ConfigModule],
+//   useFactory: async (configService: ConfigService) => {
+//     const store = await redisStore({
+//       socket: {
+//         host: configService.get<string>('REDIS_HOST'),
+//         port: parseInt(configService.get<string>('REDIS_PORT')!),
+//       },
+//     });
+//     return {
+//       store: () => store,
+//       ttl: 3000
+//     };
+//   },
+//   inject: [ConfigService],
+// };
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    CacheModule.registerAsync(RedisOptions),
+    CacheModule.register({
+      isGlobal: true,
+      store: redisStore,
+      host: configService.get<string>('REDIS_HOST'),
+      port: parseInt(configService.get<string>('REDIS_PORT')!),
+    }),
     SmsModule
   ],
   controllers: [AppController],

@@ -7,9 +7,7 @@ import axios from 'axios';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { RedisStore } from 'cache-manager-redis-store';
 import { MessageData, SendSMSDTO } from './dto/send-sms.dto';
-import { Settings } from '@prisma/client';
 import {
   SaveSettingsRequest,
   SaveSettingsResponse,
@@ -18,7 +16,6 @@ import {
   GetSettingsRequest,
   SettingData,
 } from 'src/proto/noti.pb';
-import { error } from 'console';
 
 @Injectable()
 export class SmsService {
@@ -126,8 +123,9 @@ export class SmsService {
     const key = `otp:${request.phoneNumber}:${request.clientID}`;
 
     const storedOtp = await this.cache.get(key);
+    console.log(storedOtp);
 
-    if (storedOtp === request.otpCode) {
+    if (storedOtp === request.code) {
       await this.cache.del(key); // Delete OTP after successful verification
       return { status: true, message: 'Verified' };
     }
@@ -147,10 +145,11 @@ export class SmsService {
 
     if (smsProvider) {
       const otp = await this.generateOtp(request.phoneNumber, request.clientID);
+
       const data = {
         sender: smsProvider.senderID,
         receiver: request.phoneNumber,
-        message: `Your ${smsProvider.senderID} confirmation code is ${otp}`
+        message: `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please use within 5 mins`
       }
 
       switch (smsProvider.gatewayName) {
@@ -215,7 +214,7 @@ export class SmsService {
           'https://vas.interconnectnigeria.com/nanobox/api/v1/sms/mt',
           {
             sourceMsisdn: messageData.sender,
-            destinationMsisdn: messageData.receiver,
+            destinationMsisdn: [messageData.receiver],
             allowDelivery: true,
             messageContent: messageData.message,
             routeAuth: {
@@ -233,12 +232,12 @@ export class SmsService {
         messageData.status = false;
         // save message as failed
         this.saveMessage(messageData, smsProvider);
-        return { status: false, message: response.data.message }
+        return { status: false, message: response.data.data.message }
       } else {
         messageData.status = true;
         // save message as success
         this.saveMessage(messageData, smsProvider);
-        return { status: true, message: response.data.message };
+        return { status: true, message: response.data.data.message };
       }
 
     } catch (error) {
@@ -276,23 +275,22 @@ export class SmsService {
         messageData.status = true;
         // save message as success
         this.saveMessage(messageData, smsProvider);
-        return { status: true, message: response.data.data };
+        return { status: true, message: response.data.message };
       }
     } catch (error) {
-      console.log(error.message)
       return { status: false, message: `Failed to send OTP: ${error.message}` }
     }
   }
 
-  async sendMessageMetch(request: MessageData, smsProvider: SettingData): Promise<any> {
+  async sendMessageMetch(messageData: MessageData, smsProvider: SettingData): Promise<any> {
     try {
 
       const response = await axios.post(
         'http://50.200.97.100:8099/sendsms',
         {
-          msisdn: request.receiver,
-          text: request.message,
-          senderId: request.sender,
+          msisdn: messageData.receiver,
+          text: messageData.message,
+          senderId: messageData.sender,
         },
         {
           headers: {
@@ -302,18 +300,9 @@ export class SmsService {
         },
       );
 
-      console.log(response);
-
-      await this.prisma.sms_Records.create({
-        data: {
-          provider: 'mtech',
-          status: Boolean(response.status),
-          senderID: request.sender,
-          receiverNumber: request.receiver,
-          message: request.message
-
-        }
-      })
+      messageData.status = true;
+      // save message as success
+      this.saveMessage(messageData, smsProvider);
 
       return { status: true, message: response.data };
     } catch (error) {
@@ -324,10 +313,10 @@ export class SmsService {
   async sendMessageTermii(messageData: MessageData, smsProvider: SettingData) {
     try {
       const data = {
-        api_key: 'TLU1GFhzVX74TBJKzY0eXi7UjstYfGwx14yAgWc8mOriQuPX2D30Oa5VLxwOOL',
+        api_key: smsProvider.apiKey,
         type: 'plain',
         channel: 'generic',
-        from: 'Pr.EbeanoHr',
+        from: smsProvider.senderID,
         sms: messageData.message,
         to: messageData.receiver
       }
@@ -392,7 +381,7 @@ export class SmsService {
     const otp = Math.floor(100000 + Math.random() * 900000).toString().substring(0, 6); // Generate a 6-digit OTP
     const key = `otp:${phoneNumber}:${clientId}`;
 
-    await this.cache.set(key, otp); // Set OTP with a 5-minute expiry time
+    await this.cache.set(key, otp, { ttl: 600 }); // Set OTP with a 5-minute expiry time
 
     return otp;
   }
