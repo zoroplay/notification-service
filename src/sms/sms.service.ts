@@ -18,6 +18,7 @@ import {
   GetSettingsRequest,
   SettingData,
 } from 'src/proto/noti.pb';
+import { error } from 'console';
 
 @Injectable()
 export class SmsService {
@@ -122,7 +123,7 @@ export class SmsService {
   }
 
   async handleVerifyOTP(request: VerifyOtpRequest) {
-    const key = `otp:${request.phoneNumber}`;
+    const key = `otp:${request.phoneNumber}:${request.clientID}`;
 
     const storedOtp = await this.cache.get(key);
 
@@ -159,6 +160,8 @@ export class SmsService {
           return this.sendMessageMetch(data, smsProvider);
         case 'nanobox':
           return this.sendMessageNanoBox(data, smsProvider);
+        case 'termii':
+          return this.sendMessageTermii(data, smsProvider);
         default:
           break;
       }
@@ -318,6 +321,40 @@ export class SmsService {
     }
   }
 
+  async sendMessageTermii(messageData: MessageData, smsProvider: SettingData) {
+    try {
+      const data = {
+        api_key: 'TLU1GFhzVX74TBJKzY0eXi7UjstYfGwx14yAgWc8mOriQuPX2D30Oa5VLxwOOL',
+        type: 'plain',
+        channel: 'generic',
+        from: 'Pr.EbeanoHr',
+        sms: messageData.message,
+        to: messageData.receiver
+      }
+      let resp: any = {};
+
+      resp = await axios.post(`https://api.ng.termii.com/api/sms/send`, data, {
+        headers: {
+          'Content-Type': ['application/json', 'application/json']
+        }
+      })
+
+      if (resp.data.code === 'ok') {
+        messageData.status = true;
+        // save message as success
+        this.saveMessage(messageData, smsProvider);
+        return { status: true, message: resp.data.message };
+      } else {
+        messageData.status = false;
+        // save message as success
+        this.saveMessage(messageData, smsProvider);
+        return { status: true, message: resp.data.message };
+      }
+    } catch (e) {
+      return { status: false, message: `Failed to send OTP: ${e.message}` }
+    }
+  }
+
   async getDeliveryReport(deliveryReportRequest: any): Promise<any> {
     try {
       // Implement the logic to fetch the delivery report from MC@st.
@@ -358,19 +395,6 @@ export class SmsService {
     await this.cache.set(key, otp); // Set OTP with a 5-minute expiry time
 
     return otp;
-  }
-
-  async verifyOtp(phoneNumber: string, clientId: number): Promise<boolean> {
-    const key = `otp:${phoneNumber}:${clientId}`;
-
-    const storedOtp = await this.cache.get(key);
-
-    if (storedOtp) {
-      await this.cache.del(key); // Delete OTP after successful verification
-      return true;
-    }
-
-    return false;
   }
 
   create(createSmDto: CreateSmDto) {
