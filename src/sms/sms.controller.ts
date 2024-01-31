@@ -27,6 +27,7 @@ export class SmsController {
 
   @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'verifyOtp')
   async verifyOtp(smsRequest: VerifyOtpRequest): Promise<SendSmsResponse> {
+    console.log(smsRequest)
     return this.smsService.handleVerifyOTP(smsRequest);
   }
 
