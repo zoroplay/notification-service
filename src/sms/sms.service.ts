@@ -122,6 +122,7 @@ export class SmsService {
   async handleVerifyOTP(request) {
     const key = `otp:${request.phoneNumber}:${request.clientID}`;
     const storedOtp = await this.cache.get(key);
+    console.log('otp', storedOtp, request.otpCode);
     if (storedOtp === request.otpCode) {
       await this.cache.del(key); // Delete OTP after successful verification
       return { status: true, message: 'Verified' };
