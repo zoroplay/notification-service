@@ -119,12 +119,10 @@ export class SmsService {
     return { status: true, message: 'Settings retrieved successfully', data };
   }
 
-  async handleVerifyOTP(request: VerifyOtpRequest) {
+  async handleVerifyOTP(request) {
     const key = `otp:${request.phoneNumber}:${request.clientID}`;
-    console.log('key', key)
     const storedOtp = await this.cache.get(key);
-    console.log('otp', storedOtp, request.code);
-    if (storedOtp === request.code) {
+    if (storedOtp === request.otpCode) {
       await this.cache.del(key); // Delete OTP after successful verification
       return { status: true, message: 'Verified' };
     }

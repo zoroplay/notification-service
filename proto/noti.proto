@@ -51,7 +51,7 @@ message SendOtpRequest {
 message VerifyOtpRequest {
   int32 clientID = 1;
   string phoneNumber = 2;
-  string otpCode =3 ;
+  string code =3 ;
 }
 
 message SendSmsResponse {
