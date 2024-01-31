@@ -380,7 +380,7 @@ export class SmsService {
     const otp = Math.floor(100000 + Math.random() * 900000).toString().substring(0, 6); // Generate a 6-digit OTP
     const key = `otp:${phoneNumber}:${clientId}`;
 
-    await this.cache.set(key, otp, { ttl: 600 }); // Set OTP with a 5-minute expiry time
+    await this.cache.set(key, otp, { ttl: 300 * 1000 }); // Set OTP with a 5-minute expiry time
 
     return otp;
   }
