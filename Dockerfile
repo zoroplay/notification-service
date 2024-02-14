@@ -3,12 +3,12 @@ RUN mkdir -p /app
 WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
-# COPY entrypoint.sh /app/entrypoint.sh
+COPY entrypoint.sh /app/entrypoint.sh
 COPY . .
 
 RUN npm install
 
-# RUN chmod +x /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 RUN npm run build
 EXPOSE 80
