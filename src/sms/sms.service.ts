@@ -122,8 +122,9 @@ export class SmsService {
   async handleVerifyOTP(request) {
     const key = `otp:${request.phoneNumber}:${request.clientID}`;
     const storedOtp = await this.cache.get(key);
-    console.log('otp', storedOtp, request.otpCode);
-    if (storedOtp === request.otpCode) {
+    // console.log('otp', storedOtp, request.code);
+
+    if (storedOtp === request.code) {
       await this.cache.del(key); // Delete OTP after successful verification
       return { status: true, message: 'Verified' };
     }
@@ -133,7 +134,6 @@ export class SmsService {
   }
 
   async handleOTP(request: SendOtpRequest) {
-
     const smsProvider = await this.prisma.settings.findFirst({
       where: {
         status: true,
@@ -143,12 +143,14 @@ export class SmsService {
 
     if (smsProvider) {
       const otp = await this.generateOtp(request.phoneNumber, request.clientID);
-
+      // console.log('generated ', otp)
       const data = {
         sender: smsProvider.senderID,
         receiver: request.phoneNumber,
         message: `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please use within 5 mins`
       }
+
+      // return { success: true, message: 'Success', status: true };
 
       switch (smsProvider.gatewayName) {
         case 'yournotify':
@@ -163,8 +165,7 @@ export class SmsService {
           break;
       }
     } else {
-
-
+      return { status: false, message: 'No SMS gateway found' };
     }
   }
 
