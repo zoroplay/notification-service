@@ -143,7 +143,7 @@ export class SmsService {
 
     if (smsProvider) {
       const otp = await this.generateOtp(request.phoneNumber, request.clientID);
-      // console.log('generated ', otp)
+      console.log('generated', otp)
       const data = {
         sender: smsProvider.senderID,
         receiver: request.phoneNumber,
