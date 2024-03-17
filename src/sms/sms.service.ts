@@ -226,7 +226,7 @@ export class SmsService {
             },
           },
         )
-
+      console.log(response);
       if (response.data.status === false) {
         messageData.status = false;
         // save message as failed
