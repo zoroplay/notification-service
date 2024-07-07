@@ -6,14 +6,22 @@ import { SmsService } from './sms.service';
 import { CreateSmDto } from './dto/create-sm.dto';
 import { SendSMSDTO } from './dto/send-sms.dto';
 import {
-  NOTIFICATION_SERVICE_NAME, SaveSettingsRequest, SaveSettingsResponse,
-  SendOtpRequest, SendSmsRequest, SendSmsResponse, VerifyOtpRequest,
-  GetSettingsRequest, GetSettingsResponse
+  NOTIFICATION_SERVICE_NAME,
+  SaveSettingsRequest,
+  SaveSettingsResponse,
+  SendOtpRequest,
+  SendSmsRequest,
+  SendSmsResponse,
+  VerifyOtpRequest,
+  GetSettingsRequest,
+  GetSettingsResponse,
+  HandleNotificationsRequest,
+  GetUserNotificationsRequest,
 } from 'src/proto/noti.pb';
 
 @Controller()
 export class SmsController {
-  constructor(private readonly smsService: SmsService) { }
+  constructor(private readonly smsService: SmsService) {}
 
   @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'createSms')
   createSms(createSmDto: CreateSmDto) {
@@ -36,7 +44,9 @@ export class SmsController {
   }
 
   @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'SaveSettings')
-  async SaveSettings(saveSettings: SaveSettingsRequest): Promise<SaveSettingsResponse> {
+  async SaveSettings(
+    saveSettings: SaveSettingsRequest,
+  ): Promise<SaveSettingsResponse> {
     return this.smsService.saveSettings(saveSettings);
   }
 
@@ -48,7 +58,21 @@ export class SmsController {
 
   @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'deliveryReport')
   async deliveryReport(deliveryReport: SendSMSDTO) {
-
     return this.smsService.getDeliveryReport(deliveryReport);
+  }
+  @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'GetUserNotifications')
+  async GetUserNotifications(
+    GetUserNotificationsDto: GetUserNotificationsRequest,
+  ) {
+    console.log('GetUserNotificationsDto', GetUserNotificationsDto);
+    return this.smsService.getUserNotifications(GetUserNotificationsDto);
+  }
+
+  @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'HandleNotifications')
+  async HandleNotifications(
+    HandleNotificationsDto: HandleNotificationsRequest,
+  ) {
+    console.log('HandleNotifications', HandleNotificationsDto);
+    return this.smsService.handleUserNotifications(HandleNotificationsDto);
   }
 }
