@@ -15,10 +15,20 @@ export interface GetUserNotificationsRequest {
   userId: number;
 }
 
+export interface SetReadNotificationsRequest {
+  id: number;
+}
+
 export interface HandleNotificationsResponse {
   message: string;
   status: boolean;
   data?: Notifications | undefined;
+}
+
+export interface SetReadNotificationsResponse {
+  message: string;
+  status: boolean;
+  data: Notifications | undefined;
 }
 
 export interface GetUserNotificationsResponse {
@@ -33,6 +43,7 @@ export interface Notifications {
   title: string;
   status: number;
   createdAt: string;
+  id: number;
 }
 
 export interface SaveSettingsRequest {
@@ -122,6 +133,8 @@ export interface DeliveryReportResponse {
 export const NOTIFICATION_PACKAGE_NAME = "notification";
 
 export interface NotificationServiceClient {
+  setReadNotifications(request: SetReadNotificationsRequest): Observable<SetReadNotificationsResponse>;
+
   getUserNotifications(request: GetUserNotificationsRequest): Observable<GetUserNotificationsResponse>;
 
   handleNotifications(request: HandleNotificationsRequest): Observable<HandleNotificationsResponse>;
@@ -140,6 +153,10 @@ export interface NotificationServiceClient {
 }
 
 export interface NotificationServiceController {
+  setReadNotifications(
+    request: SetReadNotificationsRequest,
+  ): Promise<SetReadNotificationsResponse> | Observable<SetReadNotificationsResponse> | SetReadNotificationsResponse;
+
   getUserNotifications(
     request: GetUserNotificationsRequest,
   ): Promise<GetUserNotificationsResponse> | Observable<GetUserNotificationsResponse> | GetUserNotificationsResponse;
@@ -170,6 +187,7 @@ export interface NotificationServiceController {
 export function NotificationServiceControllerMethods() {
   return function (constructor: Function) {
     const grpcMethods: string[] = [
+      "setReadNotifications",
       "getUserNotifications",
       "handleNotifications",
       "saveSettings",

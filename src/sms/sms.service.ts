@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateSmDto } from './dto/create-sm.dto';
 import { UpdateSmDto } from './dto/update-sm.dto';
 import axios from 'axios';
@@ -21,6 +21,8 @@ import {
   GetUserNotificationsResponse,
   HandleNotificationsResponse,
   Notifications,
+  SetReadNotificationsRequest,
+  SetReadNotificationsResponse,
 } from 'src/proto/noti.pb';
 
 @Injectable()
@@ -132,6 +134,33 @@ export class SmsService {
       };
     } catch (error) {
       return { status: false, message: error.message, data: null };
+    }
+  }
+
+  async setReadNotifications({
+    id,
+  }: SetReadNotificationsRequest): Promise<SetReadNotificationsResponse> {
+    try {
+      const user = await this.prisma.notifications.update({
+        where: {
+          id,
+        },
+        data: {
+          status: 1,
+        },
+      });
+      const new_user = this.response(user);
+      return {
+        status: true,
+        message: 'handled read notifications successfully',
+        data: new_user,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        message: error.message,
+        data: null,
+      };
     }
   }
 

@@ -17,6 +17,7 @@ import {
   GetSettingsResponse,
   HandleNotificationsRequest,
   GetUserNotificationsRequest,
+  SetReadNotificationsRequest,
 } from 'src/proto/noti.pb';
 
 @Controller()
@@ -60,11 +61,16 @@ export class SmsController {
   async deliveryReport(deliveryReport: SendSMSDTO) {
     return this.smsService.getDeliveryReport(deliveryReport);
   }
+  @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'SetReadNotifications')
+  async SetReadNotifications(
+    SetReadNotificationsDto: SetReadNotificationsRequest,
+  ) {
+    return this.smsService.setReadNotifications(SetReadNotificationsDto);
+  }
   @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'GetUserNotifications')
   async GetUserNotifications(
     GetUserNotificationsDto: GetUserNotificationsRequest,
   ) {
-    console.log('GetUserNotificationsDto', GetUserNotificationsDto);
     return this.smsService.getUserNotifications(GetUserNotificationsDto);
   }
 
@@ -72,7 +78,6 @@ export class SmsController {
   async HandleNotifications(
     HandleNotificationsDto: HandleNotificationsRequest,
   ) {
-    console.log('HandleNotifications', HandleNotificationsDto);
     return this.smsService.handleUserNotifications(HandleNotificationsDto);
   }
 }
