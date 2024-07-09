@@ -8,7 +8,6 @@ export interface HandleNotificationsRequest {
   userId: number;
   description: string;
   title: string;
-  status: number;
 }
 
 export interface GetUserNotificationsRequest {

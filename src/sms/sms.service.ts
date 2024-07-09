@@ -112,20 +112,15 @@ export class SmsService {
     userId,
     description,
     title,
-    status,
   }: HandleNotificationsRequest): Promise<HandleNotificationsResponse> {
     try {
-      console.log('HandleNotifications', userId, description, title, status);
-
       const user = await this.prisma.notifications.create({
         data: {
           userID: userId,
           description: description,
           title: title,
-          status: status,
         },
       });
-      console.log(user, 'user');
       const new_user = this.response(user);
       return {
         status: true,
