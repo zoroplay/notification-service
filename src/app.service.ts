@@ -7,9 +7,21 @@ import { Notifications } from '@prisma/client';
 export class AppService {
   constructor(private prisma: PrismaService) { }
 
-  response(value: any): Notifications {
+  response(value: any): {
+    userId: number;
+    description: string;
+    title: string;
+    status: number;
+    createdAt: string;
+    id: number;
+  } {
     return {
       ...value,
+      description: value.description,
+      title: value.title,
+      status: value.status,
+      createdAt: value.createdAt,
+      id: value.id,
       userId: value.userID,
     };
   }
