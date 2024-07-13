@@ -4,6 +4,47 @@ import { Observable } from "rxjs";
 
 export const protobufPackage = "notification";
 
+export interface HandleNotificationsRequest {
+  userId: number;
+  description: string;
+  title: string;
+}
+
+export interface GetUserNotificationsRequest {
+  userId: number;
+}
+
+export interface SetReadNotificationsRequest {
+  id: number;
+}
+
+export interface HandleNotificationsResponse {
+  message: string;
+  status: boolean;
+  data?: Notifications | undefined;
+}
+
+export interface SetReadNotificationsResponse {
+  message: string;
+  status: boolean;
+  data: Notifications | undefined;
+}
+
+export interface GetUserNotificationsResponse {
+  message: string;
+  status: boolean;
+  data: Notifications[];
+}
+
+export interface Notifications {
+  userId: number;
+  description: string;
+  title: string;
+  status: number;
+  createdAt: string;
+  id: number;
+}
+
 export interface SaveSettingsRequest {
   settingsID?: number | undefined;
   clientId: number;
@@ -91,6 +132,12 @@ export interface DeliveryReportResponse {
 export const NOTIFICATION_PACKAGE_NAME = "notification";
 
 export interface NotificationServiceClient {
+  setReadNotifications(request: SetReadNotificationsRequest): Observable<SetReadNotificationsResponse>;
+
+  getUserNotifications(request: GetUserNotificationsRequest): Observable<GetUserNotificationsResponse>;
+
+  handleNotifications(request: HandleNotificationsRequest): Observable<HandleNotificationsResponse>;
+
   saveSettings(request: SaveSettingsRequest): Observable<SaveSettingsResponse>;
 
   getSettings(request: GetSettingsRequest): Observable<GetSettingsResponse>;
@@ -105,6 +152,18 @@ export interface NotificationServiceClient {
 }
 
 export interface NotificationServiceController {
+  setReadNotifications(
+    request: SetReadNotificationsRequest,
+  ): Promise<SetReadNotificationsResponse> | Observable<SetReadNotificationsResponse> | SetReadNotificationsResponse;
+
+  getUserNotifications(
+    request: GetUserNotificationsRequest,
+  ): Promise<GetUserNotificationsResponse> | Observable<GetUserNotificationsResponse> | GetUserNotificationsResponse;
+
+  handleNotifications(
+    request: HandleNotificationsRequest,
+  ): Promise<HandleNotificationsResponse> | Observable<HandleNotificationsResponse> | HandleNotificationsResponse;
+
   saveSettings(
     request: SaveSettingsRequest,
   ): Promise<SaveSettingsResponse> | Observable<SaveSettingsResponse> | SaveSettingsResponse;
@@ -127,6 +186,9 @@ export interface NotificationServiceController {
 export function NotificationServiceControllerMethods() {
   return function (constructor: Function) {
     const grpcMethods: string[] = [
+      "setReadNotifications",
+      "getUserNotifications",
+      "handleNotifications",
       "saveSettings",
       "getSettings",
       "sendSms",
