@@ -36,3 +36,15 @@ model Settings {
 
   @@map("sms_provider_settings")
 }
+
+model Notifications {
+  id          Int      @id @default(autoincrement())
+  userID      Int      @map("user_id")
+  description String
+  title       String
+  status      Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("notifications")
+}
