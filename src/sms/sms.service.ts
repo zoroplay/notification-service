@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateSmDto } from './dto/create-sm.dto';
 import { UpdateSmDto } from './dto/update-sm.dto';
 import axios from 'axios';
@@ -14,14 +14,57 @@ import {
   SettingData,
   Notifications,
 } from 'src/proto/noti.pb';
+import * as smpp from 'smpp';
 
 @Injectable()
-export class SmsService {
+export class SmsService implements OnModuleInit {
+
+  protected smppSession;
+
   constructor(
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER)
     private cache: Cache,
-  ) { }
+  ) {
+  }
+
+  onModuleInit() {
+    let isConnected = false
+    this.smppSession = new smpp.connect({
+      url: 'smpp://10.190.2.253:10010',
+      auto_enquire_link_period: 10000,
+      debug: true,
+    });
+
+    this.smppSession.bind_transceiver({
+      system_id: 'Raimax_V01',
+      password: 'Raimax@123',
+      interface_version: 1,
+      system_type: '380666000600',
+      address_range: '+380666000600',
+      addr_ton: 1,
+      addr_npi: 1,
+    }, (pdu) => {
+      if (pdu.command_status == 0) {
+        console.log('Successfully bound');
+        isConnected = true;
+      }
+    })
+
+    this.smppSession.on('close', () => {
+      console.log('smpp is now disconnected')
+
+      if (isConnected) {
+        this.smppSession.connect();    //reconnect again
+      }
+    })
+
+    this.smppSession.on('error', error => {
+      console.log('smpp error', error)
+      isConnected = false;
+    });
+
+  }
 
   async handleVerifyOTP(request) {
     const key = `otp:${request.phoneNumber}:${request.clientID}`;
@@ -131,12 +174,12 @@ export class SmsService {
       if (response.data.status === false) {
         messageData.status = false;
         // save message as failed
-        this.saveMessage(messageData, smsProvider);
+        this.saveMessage(messageData, smsProvider, response.data);
         return { status: false, message: response.data.data.message };
       } else {
         messageData.status = true;
         // save message as success
-        this.saveMessage(messageData, smsProvider);
+        this.saveMessage(messageData, smsProvider, response.data);
         return { status: true, message: response.data.data.message };
       }
     } catch (error) {
@@ -169,12 +212,12 @@ export class SmsService {
       if (response.data.status === 'failed') {
         messageData.status = false;
         // save message as failed
-        this.saveMessage(messageData, smsProvider);
+        this.saveMessage(messageData, smsProvider, response.data);
         return { status: false, message: response.data.message };
       } else {
         messageData.status = true;
         // save message as success
-        this.saveMessage(messageData, smsProvider);
+        this.saveMessage(messageData, smsProvider, response.data);
         return { status: true, message: response.data.message };
       }
     } catch (error) {
@@ -204,10 +247,12 @@ export class SmsService {
 
       messageData.status = true;
       // save message as success
-      this.saveMessage(messageData, smsProvider);
+      this.saveMessage(messageData, smsProvider, response.data);
 
       return { status: true, message: response.data };
     } catch (error) {
+      this.saveMessage(messageData, smsProvider, error);
+
       return { status: false, message: `Failed to send SMS: ${error.message}` };
     }
   }
@@ -233,16 +278,35 @@ export class SmsService {
       if (resp.data.code === 'ok') {
         messageData.status = true;
         // save message as success
-        this.saveMessage(messageData, smsProvider);
+        this.saveMessage(messageData, smsProvider, resp.data);
         return { status: true, message: resp.data.message };
       } else {
         messageData.status = false;
         // save message as success
-        this.saveMessage(messageData, smsProvider);
+        this.saveMessage(messageData, smsProvider, resp.data);
         return { status: true, message: resp.data.message };
       }
     } catch (e) {
+      messageData.status = false;
+      // save message as success
+      this.saveMessage(messageData, smsProvider, e);
       return { status: false, message: `Failed to send OTP: ${e.message}` };
+    }
+  }
+
+  async sendMessageZain(messageData: MessageData) {
+    try {
+      this.smppSession.submit_sm({
+        destination_addr: messageData.receiver,
+        short_message: messageData.message
+      }, function (pdu) {
+        if (pdu.command_status == 0) {
+          // Message successfully sent
+          console.log(pdu.message_id);
+        }
+      });
+    } catch (e) {
+      console.log('error sending sms with zain', e.message);
     }
   }
 
@@ -270,7 +334,7 @@ export class SmsService {
     }
   }
 
-  async saveMessage(data, provider) {
+  async saveMessage(data, provider, response) {
     await this.prisma.sms_Records.create({
       data: {
         provider: provider.gatewayName,
@@ -278,6 +342,7 @@ export class SmsService {
         senderID: data.sender,
         receiverNumber: data.receiver,
         message: data.message,
+        gatewayResponse: JSON.stringify(response)
       },
     });
   }

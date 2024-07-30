@@ -11,14 +11,15 @@ datasource db {
 }
 
 model Sms_Records {
-  id             Int      @id @default(autoincrement())
-  provider       String
-  senderID       String
-  receiverNumber String
-  message        String
-  status         Boolean
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id              Int      @id @default(autoincrement())
+  provider        String
+  senderID        String
+  receiverNumber  String
+  message         String
+  gatewayResponse String?
+  status          Boolean
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 }
 
 model Settings {
