@@ -89,7 +89,7 @@ export class SmsService implements OnModuleInit {
 
     if (smsProvider) {
       const otp = await this.generateOtp(request.phoneNumber, request.clientID);
-      console.log('generated', otp);
+      // console.log('generated', otp);
       const data = {
         sender: smsProvider.senderID,
         receiver: request.phoneNumber,
@@ -264,7 +264,7 @@ export class SmsService implements OnModuleInit {
       const data = {
         api_key: smsProvider.apiKey,
         type: 'plain',
-        channel: 'generic',
+        channel: smsProvider.senderID !== 'Wurabet' ? 'generic' : 'whatsapp_otp',
         from: smsProvider.senderID,
         sms: messageData.message,
         to: messageData.receiver,
