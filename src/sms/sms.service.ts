@@ -136,6 +136,8 @@ export class SmsService implements OnModuleInit {
           return this.sendMessageMetch(data, smsProvider);
         case 'nanobox':
           return this.sendMessageNanoBox(data, smsProvider);
+        case 'termii':
+          return this.sendMessageTermii(data, smsProvider);
         default:
           break;
       }
