@@ -93,7 +93,7 @@ export class SmsService implements OnModuleInit {
       const data = {
         sender: smsProvider.senderID,
         receiver: request.phoneNumber,
-        message: `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please use within 5 mins`,
+        message: smsProvider.senderID !== 'Wurabet' ? otp : `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please use within 5 mins`,
       };
 
       // return { success: true, message: 'Success', status: true };
