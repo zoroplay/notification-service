@@ -93,7 +93,7 @@ export class SmsService implements OnModuleInit {
       const data = {
         sender: smsProvider.senderID,
         receiver: request.phoneNumber,
-        message: smsProvider.senderID === 'Wurabet' ? otp : `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please use within 5 mins`,
+        message: smsProvider.password === 'whatsapp_otp' ? otp : `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please use within 5 mins`,
       };
 
       // return { success: true, message: 'Success', status: true };
@@ -264,7 +264,7 @@ export class SmsService implements OnModuleInit {
       const data = {
         api_key: smsProvider.apiKey,
         type: 'plain',
-        channel: smsProvider.senderID !== 'Wurabet' ? 'generic' : 'whatsapp_otp',
+        channel: smsProvider.password,
         from: smsProvider.senderID,
         sms: messageData.message,
         to: messageData.receiver,
