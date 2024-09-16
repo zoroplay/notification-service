@@ -30,39 +30,39 @@ export class SmsService implements OnModuleInit {
 
   onModuleInit() {
     let isConnected = false
-    // this.smppSession = new smpp.connect({
-    //   url: 'smpp://10.190.2.253:10010',
-    //   auto_enquire_link_period: 10000,
-    //   debug: true,
-    // });
+    this.smppSession = new smpp.connect({
+      url: 'smpp://10.190.2.253:10010',
+      auto_enquire_link_period: 10000,
+      debug: true,
+    });
 
-    // this.smppSession.bind_transceiver({
-    //   system_id: 'Raimax_V01',
-    //   password: 'Raimax@123',
-    //   interface_version: 1,
-    //   system_type: '380666000600',
-    //   address_range: '+380666000600',
-    //   addr_ton: 1,
-    //   addr_npi: 1,
-    // }, (pdu) => {
-    //   if (pdu.command_status == 0) {
-    //     console.log('Successfully bound');
-    //     isConnected = true;
-    //   }
-    // })
+    this.smppSession.bind_transceiver({
+      system_id: 'Raimax_V01',
+      password: 'Raimax@123',
+      interface_version: 1,
+      system_type: '380666000600',
+      address_range: '+380666000600',
+      addr_ton: 1,
+      addr_npi: 1,
+    }, (pdu) => {
+      if (pdu.command_status == 0) {
+        console.log('Successfully bound');
+        isConnected = true;
+      }
+    })
 
-    // this.smppSession.on('close', () => {
-    //   console.log('smpp is now disconnected')
+    this.smppSession.on('close', () => {
+      console.log('smpp is now disconnected')
 
-    //   if (isConnected) {
-    //     this.smppSession.connect();    //reconnect again
-    //   }
-    // })
+      if (isConnected) {
+        this.smppSession.connect();    //reconnect again
+      }
+    })
 
-    // this.smppSession.on('error', error => {
-    //   console.log('smpp error', error)
-    //   isConnected = false;
-    // });
+    this.smppSession.on('error', error => {
+      console.log('smpp error', error)
+      isConnected = false;
+    });
 
   }
 
