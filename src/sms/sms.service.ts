@@ -40,11 +40,11 @@ export class SmsService implements OnModuleInit {
     this.smppSession.bind_transceiver({
       system_id: 'Raimax_V01',
       password: 'Raimax@123',
-      // interface_version: 1,
-      // system_type: 'SMPP',
-      // address_range: '+380666000600',
-      // addr_ton: 1,
-      // addr_npi: 1,
+      interface_version: 1,
+      system_type: 'SMPP',
+      address_range: '+380666000600',
+      addr_ton: 1,
+      addr_npi: 1,
     }, (pdu) => {
       if (pdu.command_status == 0) {
         console.log('Successfully bound');
