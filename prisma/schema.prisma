@@ -17,6 +17,7 @@ model Sms_Records {
   receiverNumber  String
   message         String
   gatewayResponse String?
+  trackingId      String?
   status          Boolean
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
