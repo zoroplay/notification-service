@@ -140,6 +140,8 @@ export class SmsService implements OnModuleInit {
           return this.sendMessageTermii(data, smsProvider);
         case 'momo':
           return this.sendMessageMomo(data, smsProvider);
+        case 'roberms':
+          return this.sendMessageRoberms(data, smsProvider);
         default:
           break;
       }
@@ -147,6 +149,56 @@ export class SmsService implements OnModuleInit {
     }
   }
 
+  async sendMessageRoberms(
+    messageData: MessageData,
+    smsProvider: SettingData,
+  ): Promise<any> {
+    try {
+      console.log(45354809);
+      const trackingId = uuidv4();
+
+      const response: {
+        status: boolean;
+        data: any;
+      } = await axios.post(
+        `${process.env.ROBERMS_SMS_API}`,
+        {
+          message: messageData.message,
+          phone_number: messageData.sender,
+          sender_name: smsProvider.username,
+          unique_identifier: trackingId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.ROBERMS_APIKEY}`,
+          },
+        },
+      );
+      console.log(response.data);
+      if (response.data.status === '-1') {
+        messageData.status = false;
+        this.saveMessage({
+          data: messageData,
+          provider: smsProvider,
+          response: response.data,
+          trackingId: trackingId ? trackingId : null,
+        });
+        return { status: false, message: response.data.processingNumber };
+      } else {
+        messageData.status = true;
+        this.saveMessage({
+          data: messageData,
+          provider: smsProvider,
+          response: response.data,
+          trackingId: trackingId ? trackingId : null,
+        });
+        return { status: true, message: response.data.processingNumber };
+      }
+    } catch (error) {
+      console.log(error.message);
+      return { status: false, message: `Failed to send OTP: ${error.message}` };
+    }
+  }
   async sendMessageMomo(
     messageData: MessageData,
     smsProvider: SettingData,
