@@ -25,7 +25,7 @@ export class SmsService implements OnModuleInit {
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER)
     private cache: Cache,
-  ) {}
+  ) { }
 
   onModuleInit() {
     let isConnected = false;
@@ -42,7 +42,7 @@ export class SmsService implements OnModuleInit {
         password: 'Raimax@123',
       },
       (pdu) => {
-        if (pdu.command_status == 0) {
+        if (pdu.command_status === 0) {
           console.log('Successfully bound');
           isConnected = true;
         }
@@ -161,16 +161,16 @@ export class SmsService implements OnModuleInit {
         status: boolean;
         data: any;
       } = await axios.post(
-        `${process.env.ROBERMS_SMS_API}`,
+        `https://roberms.co.ke/sms/v1/roberms/send/simple/sms`,
         {
           message: messageData.message,
           phone_number: messageData.sender,
-          sender_name: smsProvider.username,
+          sender_name: smsProvider.senderID,
           unique_identifier: trackingId,
         },
         {
           headers: {
-            Authorization: `Bearer ${process.env.ROBERMS_APIKEY}`,
+            Authorization: `Bearer ${smsProvider.apiKey}`,
           },
         },
       );
@@ -210,20 +210,20 @@ export class SmsService implements OnModuleInit {
         status: boolean;
         data: any;
       } = await axios.post(
-        `${process.env.MOMO_API}`,
+        `https://sms-momo-gateway-arnos.mojabet.co.tz`,
         {
           msisdn: messageData.sender,
           operator: 'VODACOM',
           reason: messageData.message,
-          senderName: smsProvider.username,
+          senderName: smsProvider.senderID,
           smsBody: messageData.message,
           transactionId: trackingId,
         },
         {
           headers: {
-            apiKey: `${process.env.MOMO_APIKEY}`,
-            user: `${process.env.MOMO_USER}`,
-            name: `${process.env.MOMO_NAME}`,
+            apiKey: smsProvider.apiKey,
+            user: smsProvider.password,
+            name: smsProvider.username,
             // apiUserName: `${process.env.MOMO_APIUSERNAME}`,
           },
         },
