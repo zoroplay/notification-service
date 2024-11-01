@@ -122,6 +122,9 @@ export class SmsService implements OnModuleInit {
         clientID: request.clientID,
       },
     });
+    if (!smsProvider) {
+      return { status: false, message: `SMS provider for client not yet set` };
+    }
 
     if (smsProvider) {
       const data = {
