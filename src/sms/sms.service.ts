@@ -132,6 +132,7 @@ export class SmsService implements OnModuleInit {
         receiver: JSON.stringify(request.phoneNumbers),
         message: request.text,
       };
+      console.log('____++++++________', smsProvider);
       switch (smsProvider.gatewayName) {
         case 'yournotify':
           return this.sendMessageYourNotify(data, smsProvider);
@@ -207,15 +208,14 @@ export class SmsService implements OnModuleInit {
     smsProvider: SettingData,
   ): Promise<any> {
     try {
-      console.log(45354809);
       const trackingId = uuidv4();
       const response: {
         status: boolean;
         data: any;
       } = await axios.post(
-        `${process.env.MOMO_API}`,
+        `${process.env.MOMO_API}/sms-controller/sms`,
         {
-          msisdn: messageData.sender,
+          msisdn: JSON.parse(messageData.receiver)[0],
           operator: 'VODACOM',
           reason: messageData.message,
           senderName: smsProvider.username,
@@ -231,7 +231,7 @@ export class SmsService implements OnModuleInit {
           },
         },
       );
-      console.log(response.data);
+
       if (response.data.status === '-1') {
         messageData.status = false;
         this.saveMessage({
