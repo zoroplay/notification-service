@@ -25,7 +25,7 @@ export class SmsService implements OnModuleInit {
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER)
     private cache: Cache,
-  ) { }
+  ) {}
 
   onModuleInit() {
     let isConnected = false;
@@ -42,7 +42,7 @@ export class SmsService implements OnModuleInit {
         password: 'Raimax@123',
       },
       (pdu) => {
-        if (pdu.command_status === 0) {
+        if (pdu.command_status == 0) {
           console.log('Successfully bound');
           isConnected = true;
         }
@@ -122,6 +122,9 @@ export class SmsService implements OnModuleInit {
         clientID: request.clientID,
       },
     });
+    if (!smsProvider) {
+      return { status: false, message: `SMS provider for client not yet set` };
+    }
 
     if (smsProvider) {
       const data = {
@@ -129,6 +132,7 @@ export class SmsService implements OnModuleInit {
         receiver: JSON.stringify(request.phoneNumbers),
         message: request.text,
       };
+      console.log('____++++++________', smsProvider);
       switch (smsProvider.gatewayName) {
         case 'yournotify':
           return this.sendMessageYourNotify(data, smsProvider);
@@ -161,16 +165,16 @@ export class SmsService implements OnModuleInit {
         status: boolean;
         data: any;
       } = await axios.post(
-        `https://roberms.co.ke/sms/v1/roberms/send/simple/sms`,
+        `${process.env.ROBERMS_SMS_API}`,
         {
           message: messageData.message,
           phone_number: messageData.sender,
-          sender_name: smsProvider.senderID,
+          sender_name: smsProvider.username,
           unique_identifier: trackingId,
         },
         {
           headers: {
-            Authorization: `Bearer ${smsProvider.apiKey}`,
+            Authorization: `Bearer ${process.env.ROBERMS_APIKEY}`,
           },
         },
       );
@@ -204,31 +208,30 @@ export class SmsService implements OnModuleInit {
     smsProvider: SettingData,
   ): Promise<any> {
     try {
-      console.log(45354809);
       const trackingId = uuidv4();
       const response: {
         status: boolean;
         data: any;
       } = await axios.post(
-        `https://sms-momo-gateway-arnos.mojabet.co.tz`,
+        `${process.env.MOMO_API}/sms-controller/sms`,
         {
-          msisdn: messageData.sender,
+          msisdn: JSON.parse(messageData.receiver)[0],
           operator: 'VODACOM',
           reason: messageData.message,
-          senderName: smsProvider.senderID,
+          senderName: smsProvider.username,
           smsBody: messageData.message,
           transactionId: trackingId,
         },
         {
           headers: {
-            apiKey: smsProvider.apiKey,
-            user: smsProvider.password,
-            name: smsProvider.username,
+            apiKey: `${process.env.MOMO_APIKEY}`,
+            user: `${process.env.MOMO_USER}`,
+            name: `${process.env.MOMO_NAME}`,
             // apiUserName: `${process.env.MOMO_APIUSERNAME}`,
           },
         },
       );
-      console.log(response.data);
+
       if (response.data.status === '-1') {
         messageData.status = false;
         this.saveMessage({
