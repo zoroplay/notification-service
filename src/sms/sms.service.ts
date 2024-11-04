@@ -224,9 +224,9 @@ export class SmsService implements OnModuleInit {
         },
         {
           headers: {
-            apiKey: `${process.env.MOMO_APIKEY}`,
-            user: `${process.env.MOMO_USER}`,
-            name: `${process.env.MOMO_NAME}`,
+            apiKey: smsProvider.apiKey,
+            user: smsProvider.senderID,
+            name: smsProvider.username,
             // apiUserName: `${process.env.MOMO_APIUSERNAME}`,
           },
         },
