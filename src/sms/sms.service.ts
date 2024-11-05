@@ -252,8 +252,8 @@ export class SmsService implements OnModuleInit {
         return { status: true, message: response.data.processingNumber };
       }
     } catch (error) {
-      console.log(error.message);
-      return { status: false, message: `Failed to send OTP: ${error.message}` };
+      console.log(error);
+      return { status: false, message: `Failed to send SMS: ${error.message}` };
     }
   }
   async sendMessageNanoBox(
