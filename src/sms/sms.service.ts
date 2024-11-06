@@ -136,7 +136,6 @@ export class SmsService implements OnModuleInit {
         receiver: JSON.stringify(request.phoneNumbers),
         message: request.text,
       };
-      console.log('____++++++________', smsProvider);
       switch (smsProvider.gatewayName) {
         case 'yournotify':
           return this.sendMessageYourNotify(data, smsProvider);
@@ -204,7 +203,7 @@ export class SmsService implements OnModuleInit {
         },
         {
           headers: {
-            Authorization: `Bearer ${process.env.ROBERMS_APIKEY}`,
+            Authorization: `Token ${process.env.ROBERMS_APIKEY}`,
           },
         },
       );
@@ -255,7 +254,7 @@ export class SmsService implements OnModuleInit {
         data: any;
       } = await axios.post(`${process.env.ROBERMS_BULKSMS_API}`, requestBody, {
         headers: {
-          Authorization: `Bearer ${process.env.ROBERMS_APIKEY}`,
+          Authorization: `Token ${process.env.ROBERMS_APIKEY}`,
         },
       });
 
