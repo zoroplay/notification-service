@@ -107,6 +107,10 @@ export class SmsService implements OnModuleInit {
           return this.sendMessageNanoBox(data, smsProvider);
         case 'termii':
           return this.sendMessageTermii(data, smsProvider);
+        case 'momo':
+          return this.sendMessageMomo(data, smsProvider);
+        case 'roberms':
+          return this.sendMessageRoberms(data, smsProvider);
         default:
           break;
       }
@@ -152,6 +156,32 @@ export class SmsService implements OnModuleInit {
     } else {
     }
   }
+  async handleBulkSms(request: SendSmsRequest) {
+    const smsProvider = await this.prisma.settings.findFirst({
+      where: {
+        status: true,
+        clientID: request.clientID,
+      },
+    });
+    if (!smsProvider) {
+      return { status: false, message: `SMS provider for client not yet set` };
+    }
+
+    if (smsProvider) {
+      const data = {
+        sender: smsProvider.senderID,
+        receiver: JSON.stringify(request.phoneNumbers),
+        message: request.text,
+      };
+      switch (smsProvider.gatewayName) {
+        case 'roberms':
+          return this.sendMessageRoberms(data, smsProvider);
+        default:
+          break;
+      }
+    } else {
+    }
+  }
 
   async sendMessageRoberms(
     messageData: MessageData,
@@ -168,7 +198,7 @@ export class SmsService implements OnModuleInit {
         `${process.env.ROBERMS_SMS_API}`,
         {
           message: messageData.message,
-          phone_number: messageData.sender,
+          phone_number: JSON.parse(messageData.receiver)[0],
           sender_name: smsProvider.username,
           unique_identifier: trackingId,
         },
@@ -203,6 +233,45 @@ export class SmsService implements OnModuleInit {
       return { status: false, message: `Failed to send OTP: ${error.message}` };
     }
   }
+  async sendBulkMessageRoberms(
+    messageData: MessageData,
+    smsProvider: SettingData,
+  ): Promise<any> {
+    try {
+      const trackingId = uuidv4();
+      const requestBody = JSON.parse(messageData.receiver).map(
+        (phone_number) => {
+          return {
+            sender_type: 1,
+            phone_number,
+            unique_identifier: trackingId,
+            message: messageData.message,
+            sender_name: messageData.sender,
+          };
+        },
+      );
+      const response: {
+        status: boolean;
+        data: any;
+      } = await axios.post(`${process.env.ROBERMS_BULKSMS_API}`, requestBody, {
+        headers: {
+          Authorization: `Bearer ${process.env.ROBERMS_APIKEY}`,
+        },
+      });
+
+      messageData.status = true;
+      this.saveMessage({
+        data: messageData,
+        provider: smsProvider,
+        response: response.data,
+        trackingId: trackingId ? trackingId : null,
+      });
+      return { status: true, message: 'BULK SMS SUCCESS' };
+    } catch (error) {
+      console.log(error.message);
+      return { status: false, message: `Failed to send OTP: ${error.message}` };
+    }
+  }
   async sendMessageMomo(
     messageData: MessageData,
     smsProvider: SettingData,
@@ -227,7 +296,8 @@ export class SmsService implements OnModuleInit {
             apiKey: smsProvider.apiKey,
             user: smsProvider.password,
             name: smsProvider.username,
-            // apiUserName: `${process.env.MOMO_APIUSERNAME}`,
+            // apiKey: `508ad228-8f3f-4fbf-8500-9876f4fd9864`,
+            // apiUserName: `2470e252-692a-4ba0-9ce9-573579fd9cbf`,
           },
         },
       );
@@ -252,7 +322,7 @@ export class SmsService implements OnModuleInit {
         return { status: true, message: response.data.processingNumber };
       }
     } catch (error) {
-      console.log(error);
+      console.log('MOMO', error, '<MMOMO');
       return { status: false, message: `Failed to send SMS: ${error.message}` };
     }
   }
