@@ -327,7 +327,7 @@ export class SmsService implements OnModuleInit {
         return { status: true, message: response.data.processingNumber };
       }
     } catch (error) {
-      console.log('MOMO', error, '<MMOMO');
+      // console.log('MOMO', error, '<MMOMO');
       return { status: false, message: `Failed to send SMS: ${error.message}` };
     }
   }
