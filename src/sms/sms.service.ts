@@ -277,6 +277,12 @@ export class SmsService implements OnModuleInit {
   ): Promise<any> {
     try {
       const trackingId = uuidv4();
+
+      console.log('errors:', {
+        apiKey: smsProvider.apiKey,
+        user: smsProvider.password,
+        name: smsProvider.username,
+      });
       const response: {
         status: boolean;
         data: any;
