@@ -306,7 +306,9 @@ export class SmsService implements OnModuleInit {
           },
         },
       );
-
+      console.log('RESPONSE:', {
+        response,
+      });
       if (response.data.status === '-1') {
         messageData.status = false;
         this.saveMessage({
