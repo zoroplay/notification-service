@@ -155,6 +155,7 @@ export class SmsService implements OnModuleInit {
     } else {
     }
   }
+  
   async handleBulkSms(request: SendSmsRequest) {
     const smsProvider = await this.prisma.settings.findFirst({
       where: {
@@ -271,22 +272,85 @@ export class SmsService implements OnModuleInit {
       return { status: false, message: `Failed to send OTP: ${error.message}` };
     }
   }
+  // async sendMessageMomo(
+  //   messageData: MessageData,
+  //   smsProvider: SettingData,
+  // ): Promise<any> {
+  //   try {
+  //     const trackingId = uuidv4();
+
+  //     console.log('errors:', {
+  //       apiKey: smsProvider.apiKey,
+  //       user: smsProvider.password,
+  //       name: smsProvider.username,
+  //     });
+  //     const response: {
+  //       status: boolean;
+  //       data: any;
+  //     } = await axios.post(
+  //       `${process.env.MOMO_API}/sms-controller/sms`,
+  //       {
+  //         msisdn: JSON.parse(messageData.receiver)[0],
+  //         operator: 'VODACOM',
+  //         reason: messageData.message,
+  //         senderName: smsProvider.username,
+  //         smsBody: messageData.message,
+  //         transactionId: trackingId,
+  //       },
+  //       {
+  //         headers: {
+  //           apiKey: smsProvider.apiKey,
+  //           user: smsProvider.password,
+  //           name: smsProvider.username,
+  //           // apiKey: `508ad228-8f3f-4fbf-8500-9876f4fd9864`,
+  //           // apiUserName: `2470e252-692a-4ba0-9ce9-573579fd9cbf`,
+  //         },
+  //       },
+  //     );
+  //     console.log('RESPONSE:', {
+  //       response,
+  //     });
+  //     if (response.data.status === '-1') {
+  //       messageData.status = false;
+  //       this.saveMessage({
+  //         data: messageData,
+  //         provider: smsProvider,
+  //         response: response.data,
+  //         trackingId: trackingId ? trackingId : null,
+  //       });
+  //       return { status: false, message: response.data.processingNumber };
+  //     } else {
+  //       messageData.status = true;
+  //       this.saveMessage({
+  //         data: messageData,
+  //         provider: smsProvider,
+  //         response: response.data,
+  //         trackingId: trackingId ? trackingId : null,
+  //       });
+  //       return { status: true, message: response.data.processingNumber };
+  //     }
+  //   } catch (error) {
+  //     // console.log('MOMO', error, '<MMOMO');
+  //     return { status: false, message: `Failed to send SMS: ${error.message}` };
+  //   }
+  // }
+
   async sendMessageMomo(
     messageData: MessageData,
     smsProvider: SettingData,
   ): Promise<any> {
     try {
       const trackingId = uuidv4();
-
-      console.log('errors:', {
+  
+      // Log the API key and username for troubleshooting
+      console.log('SMS Provider Info:', {
         apiKey: smsProvider.apiKey,
         user: smsProvider.password,
         name: smsProvider.username,
       });
-      const response: {
-        status: boolean;
-        data: any;
-      } = await axios.post(
+  
+      // Send the SMS request
+      const response = await axios.post(
         `${process.env.MOMO_API}/sms-controller/sms`,
         {
           msisdn: JSON.parse(messageData.receiver)[0],
@@ -298,39 +362,35 @@ export class SmsService implements OnModuleInit {
         },
         {
           headers: {
-            apiKey: smsProvider.apiKey,
-            user: smsProvider.password,
-            name: smsProvider.username,
-            // apiKey: `508ad228-8f3f-4fbf-8500-9876f4fd9864`,
-            // apiUserName: `2470e252-692a-4ba0-9ce9-573579fd9cbf`,
+            apiKey: process.env.MOMO_APIKEY || smsProvider.apiKey,
+            apiUserName: process.env.MOMO_USER || smsProvider.username,
+            user: process.env.MOMO_NAME  || smsProvider.password,
           },
         },
       );
-      console.log('RESPONSE:', {
-        response,
+  
+      console.log('Response:', response);
+  
+      // Check response status and save message
+      const isSuccess = response.data.status !== '-1';
+      messageData.status = isSuccess;
+      this.saveMessage({
+        data: messageData,
+        provider: smsProvider,
+        response: response.data,
+        trackingId,
       });
-      if (response.data.status === '-1') {
-        messageData.status = false;
-        this.saveMessage({
-          data: messageData,
-          provider: smsProvider,
-          response: response.data,
-          trackingId: trackingId ? trackingId : null,
-        });
-        return { status: false, message: response.data.processingNumber };
-      } else {
-        messageData.status = true;
-        this.saveMessage({
-          data: messageData,
-          provider: smsProvider,
-          response: response.data,
-          trackingId: trackingId ? trackingId : null,
-        });
-        return { status: true, message: response.data.processingNumber };
-      }
+  
+      return {
+        status: isSuccess,
+        message: response.data.processingNumber,
+      };
     } catch (error) {
-      // console.log('MOMO', error, '<MMOMO');
-      return { status: false, message: `Failed to send SMS: ${error.message}` };
+      console.error('Error sending SMS:', error);
+      return {
+        status: false,
+        message: `Failed to send SMS: ${error.message}`,
+      };
     }
   }
   async sendMessageNanoBox(
