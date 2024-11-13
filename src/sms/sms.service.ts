@@ -84,6 +84,10 @@ export class SmsService implements OnModuleInit {
       },
     });
 
+    console.log('request', request);
+
+    console.log("smsProvider", smsProvider);
+
     if (smsProvider) {
       const otp = await this.generateOtp(request.phoneNumber, request.clientID);
       // console.log('generated', otp);
@@ -96,6 +100,7 @@ export class SmsService implements OnModuleInit {
             : `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please use within 5 mins`,
       };
 
+      console.log("data", data);
       // return { success: true, message: 'Success', status: true };
 
       switch (smsProvider.gatewayName) {
@@ -349,22 +354,26 @@ export class SmsService implements OnModuleInit {
         name: smsProvider.username,
       });
   
+      const payload = {
+        msisdn: messageData.receiver,  // Use the receiver directly
+        operator: 'VODACOM',
+        reason: messageData.message,
+        senderName: smsProvider.username,
+        smsBody: messageData.message,
+        transactionId: trackingId,
+      };
+  
+      console.log("payload", payload);
+  
       // Send the SMS request
       const response = await axios.post(
         `${process.env.MOMO_API}/sms-controller/sms`,
-        {
-          msisdn: JSON.parse(messageData.receiver)[0],
-          operator: 'VODACOM',
-          reason: messageData.message,
-          senderName: smsProvider.username,
-          smsBody: messageData.message,
-          transactionId: trackingId,
-        },
+        payload,
         {
           headers: {
             apiKey: process.env.MOMO_APIKEY || smsProvider.apiKey,
             apiUserName: process.env.MOMO_USER || smsProvider.username,
-            user: process.env.MOMO_NAME  || smsProvider.password,
+            user: process.env.MOMO_NAME || smsProvider.password,
           },
         },
       );
@@ -393,6 +402,7 @@ export class SmsService implements OnModuleInit {
       };
     }
   }
+  
   async sendMessageNanoBox(
     messageData: MessageData,
     smsProvider: SettingData,
