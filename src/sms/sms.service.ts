@@ -364,7 +364,7 @@ export class SmsService implements OnModuleInit {
         msisdn: messageData.receiver,  // Use the receiver directly
         operator: 'VODACOM',
         reason: messageData.message,
-        senderName: smsProvider.username,
+        senderName: smsProvider.senderID,
         smsBody: messageData.message,
         transactionId: trackingId,
       };
