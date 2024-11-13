@@ -77,6 +77,10 @@ export class SmsService implements OnModuleInit {
   }
 
   async handleOTP(request: SendOtpRequest) {
+
+    const smsProviders = await this.prisma.settings.findMany();
+
+
     const smsProvider = await this.prisma.settings.findFirst({
       where: {
         status: true,
@@ -85,6 +89,8 @@ export class SmsService implements OnModuleInit {
     });
 
     console.log('request', request);
+
+     console.log("smsProviders", smsProviders);
 
     console.log("smsProvider", smsProvider);
 
