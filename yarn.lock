@@ -2883,6 +2883,13 @@ find-up@^5.0.0:
     locate-path "^6.0.0"
     path-exists "^4.0.0"
 
+findhit-proxywrap@^0.3.12:
+  version "0.3.13"
+  resolved "https://registry.npmjs.org/findhit-proxywrap/-/findhit-proxywrap-0.3.13.tgz"
+  integrity sha512-gI1KV7yCuMHtveiWbQUJZheNOukScz+15MTtrH/MK5RJ77JjYeJ1DegUfkBnlPvDx5NhZESl48zE/MwpWZ1LXQ==
+  dependencies:
+    lodash "^4.17.21"
+
 flat-cache@^3.0.4:
   version "3.1.1"
   resolved "https://registry.npmjs.org/flat-cache/-/flat-cache-3.1.1.tgz"
@@ -3238,7 +3245,7 @@ human-signals@^4.3.0:
   resolved "https://registry.npmjs.org/human-signals/-/human-signals-4.3.1.tgz"
   integrity sha512-nZXjEF2nbo7lIw3mgYjItAfgQXog3OjJogSbKa2CQIIvSGWcKgeJnQlNXip6NglNzYH45nSRiEVimMvYL8DDqQ==
 
-iconv-lite@^0.4.24, iconv-lite@0.4.24:
+iconv-lite@^0.4.24, iconv-lite@0.4.24, iconv-lite@0.x:
   version "0.4.24"
   resolved "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.4.24.tgz"
   integrity sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==
@@ -4988,7 +4995,7 @@ safe-buffer@~5.1.1:
 
 "sbe-service-proto@github:zoroplay/sbe-service-proto":
   version "1.0.0"
-  resolved "git+ssh://git@github.com/zoroplay/sbe-service-proto.git#8c589dd2585f1ecad3c57f996336b8502e0366aa"
+  resolved "git+ssh://git@github.com/zoroplay/sbe-service-proto.git#477a12aa536045213a75320d35a8800d74262768"
 
 schema-utils@^3.1.1, schema-utils@^3.2.0:
   version "3.3.0"
@@ -5139,6 +5146,15 @@ slash@^3.0.0:
   version "3.0.0"
   resolved "https://registry.npmjs.org/slash/-/slash-3.0.0.tgz"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
+
+smpp@^0.6.0-rc.4:
+  version "0.6.0-rc.4"
+  resolved "https://registry.npmjs.org/smpp/-/smpp-0.6.0-rc.4.tgz"
+  integrity sha512-WDa0XBRQkkJJPcKRtoC9C0cnzhopFIK9/zFcWBOy3sD4xZr3i/Dt3yX+XRparKzpp9QkqRr2/8EYt8JNGxu85w==
+  dependencies:
+    findhit-proxywrap "^0.3.12"
+    iconv-lite "0.x"
+    safer-buffer ">= 2.1.2 < 3"
 
 source-map-support@^0.5.21, source-map-support@~0.5.20, source-map-support@0.5.21:
   version "0.5.21"
