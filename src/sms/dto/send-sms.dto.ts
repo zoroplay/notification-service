@@ -18,4 +18,5 @@ export interface MessageData {
   sender: string;
   message: string;
   status?: boolean;
+  operator?: string;
 }

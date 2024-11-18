@@ -77,22 +77,12 @@ export class SmsService implements OnModuleInit {
   }
 
   async handleOTP(request: SendOtpRequest) {
-
-    const smsProviders = await this.prisma.settings.findMany();
-
-
     const smsProvider = await this.prisma.settings.findFirst({
       where: {
         status: true,
         clientID: request.clientID,
       },
     });
-
-    console.log('request', request);
-
-     console.log("smsProviders", smsProviders);
-
-    console.log("smsProvider", smsProvider);
 
     if (smsProvider) {
       const otp = await this.generateOtp(request.phoneNumber, request.clientID);
@@ -145,6 +135,7 @@ export class SmsService implements OnModuleInit {
       const data = {
         sender: smsProvider.senderID,
         receiver: JSON.stringify(request.phoneNumbers),
+        operator: JSON.stringify(request.operator),
         message: request.text,
       };
       switch (smsProvider.gatewayName) {
@@ -362,7 +353,7 @@ export class SmsService implements OnModuleInit {
   
       const payload = {
         msisdn: messageData.receiver,  // Use the receiver directly
-        operator: 'VODACOM',
+        operator: messageData.operator,
         reason: messageData.message,
         senderName: smsProvider.senderID,
         smsBody: messageData.message,
