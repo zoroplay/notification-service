@@ -102,6 +102,7 @@ export interface SendSmsRequest {
 export interface SendOtpRequest {
   clientID: number;
   phoneNumber: string;
+  operator: string;
 }
 
 export interface VerifyOtpRequest {
