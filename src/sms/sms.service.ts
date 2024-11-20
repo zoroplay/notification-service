@@ -90,6 +90,7 @@ export class SmsService implements OnModuleInit {
       const data = {
         sender: smsProvider.senderID,
         receiver: request.phoneNumber,
+        operator: request.operator || 'VODACOM',
         message:
           smsProvider.password === 'whatsapp_otp'
             ? otp
@@ -121,6 +122,12 @@ export class SmsService implements OnModuleInit {
   }
 
   async handleSms(request: SendSmsRequest) {
+
+    console.log('got to handle sms', request);
+    const smsProviders = await this.prisma.settings.findMany({});
+
+    console.log('smsProviders', smsProviders);
+
     const smsProvider = await this.prisma.settings.findFirst({
       where: {
         status: true,
@@ -132,6 +139,8 @@ export class SmsService implements OnModuleInit {
     }
 
     if (smsProvider) {
+
+      console.log('smsProvider', smsProvider);
       const data = {
         sender: smsProvider.senderID,
         receiver: JSON.stringify(request.phoneNumbers),
