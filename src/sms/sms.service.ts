@@ -25,7 +25,7 @@ export class SmsService implements OnModuleInit {
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER)
     private cache: Cache,
-  ) { }
+  ) {}
 
   onModuleInit() {
     let isConnected = false;
@@ -42,7 +42,7 @@ export class SmsService implements OnModuleInit {
         password: 'Raimax@123',
       },
       (pdu) => {
-        if (pdu.command_status === 0) {
+        if (pdu.command_status == 0) {
           console.log('Successfully bound');
           isConnected = true;
         }
@@ -90,12 +90,14 @@ export class SmsService implements OnModuleInit {
       const data = {
         sender: smsProvider.senderID,
         receiver: request.phoneNumber,
+        operator: request.operator || 'VODACOM',
         message:
           smsProvider.password === 'whatsapp_otp'
             ? otp
             : `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please use within 5 mins`,
       };
 
+      console.log("data", data);
       // return { success: true, message: 'Success', status: true };
 
       switch (smsProvider.gatewayName) {
@@ -107,6 +109,10 @@ export class SmsService implements OnModuleInit {
           return this.sendMessageNanoBox(data, smsProvider);
         case 'termii':
           return this.sendMessageTermii(data, smsProvider);
+        case 'momo':
+          return this.sendMessageMomo(data, smsProvider);
+        case 'roberms':
+          return this.sendMessageRoberms(data, smsProvider);
         default:
           break;
       }
@@ -116,17 +122,29 @@ export class SmsService implements OnModuleInit {
   }
 
   async handleSms(request: SendSmsRequest) {
+
+    console.log('got to handle sms', request);
+    const smsProviders = await this.prisma.settings.findMany({});
+
+    console.log('smsProviders', smsProviders);
+
     const smsProvider = await this.prisma.settings.findFirst({
       where: {
         status: true,
         clientID: request.clientID,
       },
     });
+    if (!smsProvider) {
+      return { status: false, message: `SMS provider for client not yet set` };
+    }
 
     if (smsProvider) {
+
+      console.log('smsProvider', smsProvider);
       const data = {
         sender: smsProvider.senderID,
         receiver: JSON.stringify(request.phoneNumbers),
+        operator: JSON.stringify(request.operator),
         message: request.text,
       };
       switch (smsProvider.gatewayName) {
@@ -148,6 +166,33 @@ export class SmsService implements OnModuleInit {
     } else {
     }
   }
+  
+  async handleBulkSms(request: SendSmsRequest) {
+    const smsProvider = await this.prisma.settings.findFirst({
+      where: {
+        status: true,
+        clientID: request.clientID,
+      },
+    });
+    if (!smsProvider) {
+      return { status: false, message: `SMS provider for client not yet set` };
+    }
+
+    if (smsProvider) {
+      const data = {
+        sender: smsProvider.senderID,
+        receiver: JSON.stringify(request.phoneNumbers),
+        message: request.text,
+      };
+      switch (smsProvider.gatewayName) {
+        case 'roberms':
+          return this.sendMessageRoberms(data, smsProvider);
+        default:
+          break;
+      }
+    } else {
+    }
+  }
 
   async sendMessageRoberms(
     messageData: MessageData,
@@ -161,16 +206,16 @@ export class SmsService implements OnModuleInit {
         status: boolean;
         data: any;
       } = await axios.post(
-        `https://roberms.co.ke/sms/v1/roberms/send/simple/sms`,
+        `${process.env.ROBERMS_SMS_API}`,
         {
           message: messageData.message,
-          phone_number: messageData.sender,
-          sender_name: smsProvider.senderID,
+          phone_number: JSON.parse(messageData.receiver)[0],
+          sender_name: smsProvider.username,
           unique_identifier: trackingId,
         },
         {
           headers: {
-            Authorization: `Bearer ${smsProvider.apiKey}`,
+            Authorization: `Token ${process.env.ROBERMS_APIKEY}`,
           },
         },
       );
@@ -199,60 +244,171 @@ export class SmsService implements OnModuleInit {
       return { status: false, message: `Failed to send OTP: ${error.message}` };
     }
   }
+  async sendBulkMessageRoberms(
+    messageData: MessageData,
+    smsProvider: SettingData,
+  ): Promise<any> {
+    try {
+      const trackingId = uuidv4();
+      const requestBody = JSON.parse(messageData.receiver).map(
+        (phone_number) => {
+          return {
+            sender_type: 1,
+            phone_number,
+            unique_identifier: trackingId,
+            message: messageData.message,
+            sender_name: messageData.sender,
+          };
+        },
+      );
+      const response: {
+        status: boolean;
+        data: any;
+      } = await axios.post(`${process.env.ROBERMS_BULKSMS_API}`, requestBody, {
+        headers: {
+          Authorization: `Token ${process.env.ROBERMS_APIKEY}`,
+        },
+      });
+
+      messageData.status = true;
+      this.saveMessage({
+        data: messageData,
+        provider: smsProvider,
+        response: response.data,
+        trackingId: trackingId ? trackingId : null,
+      });
+      return { status: true, message: 'BULK SMS SUCCESS' };
+    } catch (error) {
+      console.log(error.message);
+      return { status: false, message: `Failed to send OTP: ${error.message}` };
+    }
+  }
+  // async sendMessageMomo(
+  //   messageData: MessageData,
+  //   smsProvider: SettingData,
+  // ): Promise<any> {
+  //   try {
+  //     const trackingId = uuidv4();
+
+  //     console.log('errors:', {
+  //       apiKey: smsProvider.apiKey,
+  //       user: smsProvider.password,
+  //       name: smsProvider.username,
+  //     });
+  //     const response: {
+  //       status: boolean;
+  //       data: any;
+  //     } = await axios.post(
+  //       `${process.env.MOMO_API}/sms-controller/sms`,
+  //       {
+  //         msisdn: JSON.parse(messageData.receiver)[0],
+  //         operator: 'VODACOM',
+  //         reason: messageData.message,
+  //         senderName: smsProvider.username,
+  //         smsBody: messageData.message,
+  //         transactionId: trackingId,
+  //       },
+  //       {
+  //         headers: {
+  //           apiKey: smsProvider.apiKey,
+  //           user: smsProvider.password,
+  //           name: smsProvider.username,
+  //           // apiKey: `508ad228-8f3f-4fbf-8500-9876f4fd9864`,
+  //           // apiUserName: `2470e252-692a-4ba0-9ce9-573579fd9cbf`,
+  //         },
+  //       },
+  //     );
+  //     console.log('RESPONSE:', {
+  //       response,
+  //     });
+  //     if (response.data.status === '-1') {
+  //       messageData.status = false;
+  //       this.saveMessage({
+  //         data: messageData,
+  //         provider: smsProvider,
+  //         response: response.data,
+  //         trackingId: trackingId ? trackingId : null,
+  //       });
+  //       return { status: false, message: response.data.processingNumber };
+  //     } else {
+  //       messageData.status = true;
+  //       this.saveMessage({
+  //         data: messageData,
+  //         provider: smsProvider,
+  //         response: response.data,
+  //         trackingId: trackingId ? trackingId : null,
+  //       });
+  //       return { status: true, message: response.data.processingNumber };
+  //     }
+  //   } catch (error) {
+  //     // console.log('MOMO', error, '<MMOMO');
+  //     return { status: false, message: `Failed to send SMS: ${error.message}` };
+  //   }
+  // }
+
   async sendMessageMomo(
     messageData: MessageData,
     smsProvider: SettingData,
   ): Promise<any> {
     try {
-      console.log(45354809);
       const trackingId = uuidv4();
-      const response: {
-        status: boolean;
-        data: any;
-      } = await axios.post(
-        `https://sms-momo-gateway-arnos.mojabet.co.tz`,
-        {
-          msisdn: messageData.sender,
-          operator: 'VODACOM',
-          reason: messageData.message,
-          senderName: smsProvider.senderID,
-          smsBody: messageData.message,
-          transactionId: trackingId,
-        },
+  
+      // Log the API key and username for troubleshooting
+      console.log('SMS Provider Info:', {
+        apiKey: smsProvider.apiKey,
+        user: smsProvider.password,
+        name: smsProvider.username,
+      });
+  
+      const payload = {
+        msisdn: messageData.receiver,  // Use the receiver directly
+        operator: messageData.operator,
+        reason: messageData.message,
+        senderName: smsProvider.senderID,
+        smsBody: messageData.message,
+        transactionId: trackingId,
+      };
+  
+      console.log("payload", payload);
+  
+      // Send the SMS request
+      const response = await axios.post(
+        `${process.env.MOMO_API}/sms-controller/sms`,
+        payload,
         {
           headers: {
-            apiKey: smsProvider.apiKey,
-            user: smsProvider.password,
-            name: smsProvider.username,
-            // apiUserName: `${process.env.MOMO_APIUSERNAME}`,
+            apiKey: process.env.MOMO_APIKEY || smsProvider.apiKey,
+            apiUserName: process.env.MOMO_USER || smsProvider.username,
+            user: process.env.MOMO_NAME || smsProvider.password,
           },
         },
       );
-      console.log(response.data);
-      if (response.data.status === '-1') {
-        messageData.status = false;
-        this.saveMessage({
-          data: messageData,
-          provider: smsProvider,
-          response: response.data,
-          trackingId: trackingId ? trackingId : null,
-        });
-        return { status: false, message: response.data.processingNumber };
-      } else {
-        messageData.status = true;
-        this.saveMessage({
-          data: messageData,
-          provider: smsProvider,
-          response: response.data,
-          trackingId: trackingId ? trackingId : null,
-        });
-        return { status: true, message: response.data.processingNumber };
-      }
+  
+      console.log('Response:', response);
+  
+      // Check response status and save message
+      const isSuccess = response.data.status !== '-1';
+      messageData.status = isSuccess;
+      this.saveMessage({
+        data: messageData,
+        provider: smsProvider,
+        response: response.data,
+        trackingId,
+      });
+  
+      return {
+        status: isSuccess,
+        message: response.data.processingNumber,
+      };
     } catch (error) {
-      console.log(error.message);
-      return { status: false, message: `Failed to send OTP: ${error.message}` };
+      console.error('Error sending SMS:', error);
+      return {
+        status: false,
+        message: `Failed to send SMS: ${error.message}`,
+      };
     }
   }
+  
   async sendMessageNanoBox(
     messageData: MessageData,
     smsProvider: SettingData,

@@ -96,11 +96,13 @@ export interface SendSmsRequest {
   mode: string;
   campaignType: string;
   clientID: number;
+  operator: string;
 }
 
 export interface SendOtpRequest {
   clientID: number;
   phoneNumber: string;
+  operator: string;
 }
 
 export interface VerifyOtpRequest {
