@@ -17,6 +17,8 @@ import {
 import * as smpp from 'smpp';
 import { v4 as uuidv4 } from 'uuid';
 
+const MOMO_API = "https://sms-momo-gateway-arnos.mojabet.co.tz"
+
 @Injectable()
 export class SmsService implements OnModuleInit {
   protected smppSession;
@@ -373,7 +375,7 @@ export class SmsService implements OnModuleInit {
   
       // Send the SMS request
       const response = await axios.post(
-        `${process.env.MOMO_API}/sms-controller/sms`,
+        `${MOMO_API}/sms-controller/sms`,
         payload,
         {
           headers: {
