@@ -17,6 +17,8 @@ import {
 import * as smpp from 'smpp';
 import { v4 as uuidv4 } from 'uuid';
 
+const MOMO_API = "https://sms-momo-gateway-arnos.mojabet.co.tz"
+
 @Injectable()
 export class SmsService implements OnModuleInit {
   protected smppSession;
@@ -86,7 +88,7 @@ export class SmsService implements OnModuleInit {
 
     if (smsProvider) {
       const otp = await this.generateOtp(request.phoneNumber, request.clientID);
-      // console.log('generated', otp);
+      // console.log('provider', smsProvider);
       const data = {
         sender: smsProvider.senderID,
         receiver: request.phoneNumber,
@@ -111,10 +113,10 @@ export class SmsService implements OnModuleInit {
           return this.sendMessageTermii(data, smsProvider);
         case 'momo':
           return this.sendMessageMomo(data, smsProvider);
-        case 'roberms':
+        case 'robersms':
           return this.sendMessageRoberms(data, smsProvider);
         default:
-          break;
+          return { success: false, message: 'SMS gateway does not exist in swithc' }
       }
     } else {
       return { status: false, message: 'No SMS gateway found' };
@@ -206,7 +208,7 @@ export class SmsService implements OnModuleInit {
         status: boolean;
         data: any;
       } = await axios.post(
-        `${process.env.ROBERMS_SMS_API}`,
+        `https://roberms.co.ke/sms/v1/roberms/send/simple/sms`,
         {
           timeStamp: new Date(),
           dataSet: [{
@@ -219,7 +221,7 @@ export class SmsService implements OnModuleInit {
         },
         {
           headers: {
-            Authorization: `Token ${process.env.ROBERMS_APIKEY}`,
+            Authorization: `Token ${smsProvider.apiKey}`,
           },
         },
       );
@@ -248,6 +250,7 @@ export class SmsService implements OnModuleInit {
       return { status: false, message: `Failed to send OTP: ${error.message}` };
     }
   }
+
   async sendBulkMessageRoberms(
     messageData: MessageData,
     smsProvider: SettingData,
@@ -377,7 +380,7 @@ export class SmsService implements OnModuleInit {
 
       // Send the SMS request
       const response = await axios.post(
-        `${process.env.MOMO_API}/sms-controller/sms`,
+        `${MOMO_API}/sms-controller/sms`,
         payload,
         {
           headers: {
