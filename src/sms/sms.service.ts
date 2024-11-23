@@ -27,7 +27,7 @@ export class SmsService implements OnModuleInit {
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER)
     private cache: Cache,
-  ) {}
+  ) { }
 
   onModuleInit() {
     let isConnected = false;
@@ -168,7 +168,7 @@ export class SmsService implements OnModuleInit {
     } else {
     }
   }
-  
+
   async handleBulkSms(request: SendSmsRequest) {
     const smsProvider = await this.prisma.settings.findFirst({
       where: {
@@ -208,16 +208,16 @@ export class SmsService implements OnModuleInit {
         status: boolean;
         data: any;
       } = await axios.post(
-        `${process.env.ROBERMS_SMS_API}`,
+        `https://roberms.co.ke/sms/v1/roberms/send/simple/sms`,
         {
           message: messageData.message,
           phone_number: JSON.parse(messageData.receiver)[0],
-          sender_name: smsProvider.username,
+          sender_name: smsProvider.senderID,
           unique_identifier: trackingId,
         },
         {
           headers: {
-            Authorization: `Token ${process.env.ROBERMS_APIKEY}`,
+            Authorization: `Token ${smsProvider.apiKey}`,
           },
         },
       );
@@ -246,6 +246,7 @@ export class SmsService implements OnModuleInit {
       return { status: false, message: `Failed to send OTP: ${error.message}` };
     }
   }
+
   async sendBulkMessageRoberms(
     messageData: MessageData,
     smsProvider: SettingData,
@@ -354,14 +355,14 @@ export class SmsService implements OnModuleInit {
   ): Promise<any> {
     try {
       const trackingId = uuidv4();
-  
+
       // Log the API key and username for troubleshooting
       console.log('SMS Provider Info:', {
         apiKey: smsProvider.apiKey,
         user: smsProvider.password,
         name: smsProvider.username,
       });
-  
+
       const payload = {
         msisdn: messageData.receiver,  // Use the receiver directly
         operator: messageData.operator,
@@ -370,9 +371,9 @@ export class SmsService implements OnModuleInit {
         smsBody: messageData.message,
         transactionId: trackingId,
       };
-  
+
       console.log("payload", payload);
-  
+
       // Send the SMS request
       const response = await axios.post(
         `${MOMO_API}/sms-controller/sms`,
@@ -385,9 +386,9 @@ export class SmsService implements OnModuleInit {
           },
         },
       );
-  
+
       console.log('Response:', response);
-  
+
       // Check response status and save message
       const isSuccess = response.data.status !== '-1';
       messageData.status = isSuccess;
@@ -397,7 +398,7 @@ export class SmsService implements OnModuleInit {
         response: response.data,
         trackingId,
       });
-  
+
       return {
         status: isSuccess,
         message: response.data.processingNumber,
@@ -410,7 +411,7 @@ export class SmsService implements OnModuleInit {
       };
     }
   }
-  
+
   async sendMessageNanoBox(
     messageData: MessageData,
     smsProvider: SettingData,
