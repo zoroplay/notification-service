@@ -88,7 +88,7 @@ export class SmsService implements OnModuleInit {
 
     if (smsProvider) {
       const otp = await this.generateOtp(request.phoneNumber, request.clientID);
-      // console.log('generated', otp);
+      // console.log('provider', smsProvider);
       const data = {
         sender: smsProvider.senderID,
         receiver: request.phoneNumber,
@@ -113,10 +113,10 @@ export class SmsService implements OnModuleInit {
           return this.sendMessageTermii(data, smsProvider);
         case 'momo':
           return this.sendMessageMomo(data, smsProvider);
-        case 'roberms':
+        case 'robersms':
           return this.sendMessageRoberms(data, smsProvider);
         default:
-          break;
+          return { success: false, message: 'SMS gateway does not exist in swithc' }
       }
     } else {
       return { status: false, message: 'No SMS gateway found' };
@@ -211,7 +211,7 @@ export class SmsService implements OnModuleInit {
         `https://roberms.co.ke/sms/v1/roberms/send/simple/sms`,
         {
           message: messageData.message,
-          phone_number: JSON.parse(messageData.receiver)[0],
+          phone_number: messageData.receiver,
           sender_name: smsProvider.senderID,
           unique_identifier: trackingId,
         },
