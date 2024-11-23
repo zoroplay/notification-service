@@ -25,7 +25,7 @@ export class SmsService implements OnModuleInit {
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER)
     private cache: Cache,
-  ) {}
+  ) { }
 
   onModuleInit() {
     let isConnected = false;
@@ -166,7 +166,7 @@ export class SmsService implements OnModuleInit {
     } else {
     }
   }
-  
+
   async handleBulkSms(request: SendSmsRequest) {
     const smsProvider = await this.prisma.settings.findFirst({
       where: {
@@ -208,10 +208,14 @@ export class SmsService implements OnModuleInit {
       } = await axios.post(
         `${process.env.ROBERMS_SMS_API}`,
         {
-          message: messageData.message,
-          phone_number: JSON.parse(messageData.receiver)[0],
-          sender_name: smsProvider.username,
-          unique_identifier: trackingId,
+          timeStamp: new Date(),
+          dataSet: [{
+            sender_type: 2,
+            phone_number: messageData.receiver,
+            unique_identifier: trackingId,
+            message: messageData.message,
+            sender_name: smsProvider.senderID,
+          }]
         },
         {
           headers: {
@@ -352,14 +356,14 @@ export class SmsService implements OnModuleInit {
   ): Promise<any> {
     try {
       const trackingId = uuidv4();
-  
+
       // Log the API key and username for troubleshooting
       console.log('SMS Provider Info:', {
         apiKey: smsProvider.apiKey,
         user: smsProvider.password,
         name: smsProvider.username,
       });
-  
+
       const payload = {
         msisdn: messageData.receiver,  // Use the receiver directly
         operator: messageData.operator,
@@ -368,9 +372,9 @@ export class SmsService implements OnModuleInit {
         smsBody: messageData.message,
         transactionId: trackingId,
       };
-  
+
       console.log("payload", payload);
-  
+
       // Send the SMS request
       const response = await axios.post(
         `${process.env.MOMO_API}/sms-controller/sms`,
@@ -383,9 +387,9 @@ export class SmsService implements OnModuleInit {
           },
         },
       );
-  
+
       console.log('Response:', response);
-  
+
       // Check response status and save message
       const isSuccess = response.data.status !== '-1';
       messageData.status = isSuccess;
@@ -395,7 +399,7 @@ export class SmsService implements OnModuleInit {
         response: response.data,
         trackingId,
       });
-  
+
       return {
         status: isSuccess,
         message: response.data.processingNumber,
@@ -408,7 +412,7 @@ export class SmsService implements OnModuleInit {
       };
     }
   }
-  
+
   async sendMessageNanoBox(
     messageData: MessageData,
     smsProvider: SettingData,
