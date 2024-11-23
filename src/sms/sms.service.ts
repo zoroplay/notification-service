@@ -210,14 +210,11 @@ export class SmsService implements OnModuleInit {
       } = await axios.post(
         `https://roberms.co.ke/sms/v1/roberms/send/simple/sms`,
         {
-          timeStamp: new Date(),
-          dataSet: [{
-            sender_type: 2,
-            phone_number: messageData.receiver,
-            unique_identifier: trackingId,
-            message: messageData.message,
-            sender_name: smsProvider.senderID,
-          }]
+          sender_type: 2,
+          phone_number: messageData.receiver,
+          unique_identifier: trackingId,
+          message: messageData.message,
+          sender_name: smsProvider.senderID,
         },
         {
           headers: {
