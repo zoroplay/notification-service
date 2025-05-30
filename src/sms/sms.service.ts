@@ -419,22 +419,22 @@ export class SmsService implements OnModuleInit {
     smsProvider: SettingData,
   ): Promise<any> {
     try {
-      // const otp = await Promise.all(request.lists.map((item) => {
-      // }))
+      const payload = {
+        sourceMsisdn: messageData.sender,
+        destinationMsisdn: [messageData.receiver],
+        allowDelivery: true,
+        messageContent: messageData.message,
+        routeAuth: {
+          systemId: smsProvider.username,
+        },
+      }
+
       const response: {
         status: boolean;
         data: any;
       } = await axios.post(
         'https://vas.interconnectnigeria.com/nanobox/api/v1/sms/mt',
-        {
-          sourceMsisdn: messageData.sender,
-          destinationMsisdn: [messageData.receiver],
-          allowDelivery: true,
-          messageContent: messageData.message,
-          routeAuth: {
-            systemId: smsProvider.username,
-          },
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${smsProvider.apiKey}`,
