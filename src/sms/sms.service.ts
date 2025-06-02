@@ -428,7 +428,7 @@ export class SmsService implements OnModuleInit {
           systemId: smsProvider.username,
         },
       }
-
+      console.log("PAYLOAD", payload)
       const response: {
         status: boolean;
         data: any;
