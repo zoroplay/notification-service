@@ -80,13 +80,78 @@ export class SmsService implements OnModuleInit {
     return { status: false, message: 'Wrong Otp Code' };
   }
 
+  // async handleOTP(request: SendOtpRequest) {
+  //   const smsProvider = await this.prisma.settings.findFirst({
+  //     where: {
+  //       status: true,
+  //       clientID: request.clientID,
+  //     },
+  //   });
+
+  //   console.log
+
+  //   if (smsProvider) {
+  //     const otp = await this.generateOtp(request.phoneNumber, request.clientID);
+  //     // console.log('provider', smsProvider);
+  //     const data = {
+  //       sender: smsProvider.senderID,
+  //       receiver: request.phoneNumber,
+  //       operator: request.operator || 'VODACOM',
+  //       message:
+  //         smsProvider.password === 'whatsapp_otp'
+  //           ? otp
+  //           : `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please use within 5 mins`,
+  //     };
+
+  //     console.log("data", data);
+  //     // return { success: true, message: 'Success', status: true };
+
+      
+
+  //     switch (smsProvider.gatewayName) {
+  //       case 'yournotify':
+  //         return this.sendMessageYourNotify(data, smsProvider);
+  //       case 'mtech':
+  //         return this.sendMessageMetch(data, smsProvider);
+  //       case 'nanobox':
+  //         return this.sendMessageNanoBox(data, smsProvider);
+  //       case 'termii':
+  //         return this.sendMessageTermii(data, smsProvider);
+  //       case 'momo':
+  //         return this.sendMessageMomo(data, smsProvider);
+  //       case 'robersms':
+  //         return this.sendMessageRoberms(data, smsProvider);
+  //       case 'smsense':
+  //         return this.sendMessageSmsense(data, smsProvider);
+  //       default:
+  //         return { success: false, message: 'SMS gateway does not exist in swithc' }
+  //     }
+  //   } else {
+  //     return { status: false, message: 'No SMS gateway found' };
+  //   }
+  // }
+
   async handleOTP(request: SendOtpRequest) {
+    // Build the where clause based on country code
+    const whereClause: any = {
+      status: true,
+      clientID: request.clientID,
+    };
+
+    // If countryCode is provided and is ZW or LS, filter by senderID
+    if (request.countryCode && (request.countryCode === 'ZW' || request.countryCode === 'LS')) {
+      const senderIDMap = {
+        'ZW': 'Bwinners ZW',
+        'LS': 'Bwinners LS'
+      };
+      whereClause.senderID = senderIDMap[request.countryCode];
+    }
+
     const smsProvider = await this.prisma.settings.findFirst({
-      where: {
-        status: true,
-        clientID: request.clientID,
-      },
+      where: whereClause,
     });
+
+    console.log("SMS Provider:", smsProvider);
 
     if (smsProvider) {
       const otp = await this.generateOtp(request.phoneNumber, request.clientID);
@@ -120,10 +185,13 @@ export class SmsService implements OnModuleInit {
         case 'smsense':
           return this.sendMessageSmsense(data, smsProvider);
         default:
-          return { success: false, message: 'SMS gateway does not exist in swithc' }
+          return { success: false, message: 'SMS gateway does not exist in switch' };
       }
     } else {
-      return { status: false, message: 'No SMS gateway found' };
+      const errorMessage = request.countryCode && (request.countryCode === 'ZW' || request.countryCode === 'LS')
+        ? `No SMS gateway found for country code: ${request.countryCode}`
+        : 'No SMS gateway found';
+      return { status: false, message: errorMessage };
     }
   }
 

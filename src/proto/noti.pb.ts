@@ -103,6 +103,7 @@ export interface SendOtpRequest {
   clientID: number;
   phoneNumber: string;
   operator: string;
+  countryCode?: string | undefined;
 }
 
 export interface VerifyOtpRequest {
