@@ -163,7 +163,7 @@ export class SmsService implements OnModuleInit {
         message:
           smsProvider.password === 'whatsapp_otp'
             ? otp
-            : `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please use within 5 mins`,
+            : `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please visit https://bwinners.sn and use within 5 mins`,
       };
 
       console.log("data", data);
