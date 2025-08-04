@@ -1,11 +1,12 @@
 /* eslint-disable prettier/prettier */
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from "@nestjs/common";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
-import { PrismaService } from './prisma/prisma.service';
-import { CacheModule, CacheModuleAsyncOptions } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as redisStore from "cache-manager-redis-store";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { MessageModule } from "./message/message.module";
+import { PrismaService } from './prisma/prisma.service';
 import { SmsModule } from "./sms/sms.module";
 
 const configService = new ConfigService();
@@ -36,7 +37,8 @@ const configService = new ConfigService();
       host: configService.get<string>('REDIS_HOST'),
       port: parseInt(configService.get<string>('REDIS_PORT')!),
     }),
-    SmsModule
+    SmsModule,
+    MessageModule
   ],
   controllers: [AppController],
   providers: [

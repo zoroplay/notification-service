@@ -4995,7 +4995,7 @@ safe-buffer@~5.1.1:
 
 "sbe-service-proto@github:zoroplay/sbe-service-proto":
   version "1.0.0"
-  resolved "git+ssh://git@github.com/zoroplay/sbe-service-proto.git#2bda54841947cbdadbda70f1ab7e51f20bf56266"
+  resolved "git+ssh://git@github.com/zoroplay/sbe-service-proto.git#f811e006d95d5462b1337cefc42399d9b93805d0"
 
 schema-utils@^3.1.1, schema-utils@^3.2.0:
   version "3.3.0"

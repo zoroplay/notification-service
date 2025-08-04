@@ -50,3 +50,27 @@ model Notifications {
 
   @@map("notifications")
 }
+
+
+model Messages {
+  id          Int      @id @default(autoincrement())
+  clientID    Int      @map("client_id")
+  content     String   @db.Text
+  title       String
+  status      Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("messages")
+}
+
+model User_Messages {
+  id          Int      @id @default(autoincrement())
+  userID      Int      @map("user_id")
+  messageID   Int      @map("message_id")
+  status      Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("user_messages")
+}
