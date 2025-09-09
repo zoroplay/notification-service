@@ -1,0 +1,73 @@
+stages:
+  - version
+  - build
+
+default:
+  image: docker:24.0.5
+
+services:
+  - docker:24.0.5-dind
+
+get_new_version:
+  stage: version
+ # tags:
+ #   - sbeit
+  image: node:20
+  before_script:
+    - export GITLAB_TOKEN=$GITLAB_TOKEN
+    - git remote set-url origin https://oauth2:${GITLAB_TOKEN}@gitlab.com/sbe-developers/notification-service.git
+  script:
+    - echo "Node version:"
+    - node -v
+    - echo "Fetching latest from remote..."
+    - git fetch origin main
+    - git reset --hard origin/main
+    - echo "Installing semantic-release dependencies..."
+    - yarn cache clean
+    - yarn install
+    - yarn add --dev semantic-release @semantic-release/changelog @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/gitlab @semantic-release/exec @semantic-release/git
+    - echo "Running semantic-release..."
+    - npx semantic-release --dry-run --debug --extends ./release.config.js
+    - |
+      if [ -f ".VERSION" ]; then
+        cat .VERSION;
+      elif [ "$(git describe --tags --abbrev=0)" ]; then
+        echo "No new version generated. Using last tag version:";
+        git describe --tags --abbrev=0 > .VERSION;
+      else
+        echo "No new version generated" > .VERSION;
+      fi
+  retry: 2
+  artifacts:
+    paths:
+      - .VERSION
+    expire_in: "90 days"
+  only:
+    - main
+
+
+
+# ------------------- Build Stage -------------------
+build-application:
+  stage: build
+  dependencies:
+    - get_new_version  # Ensure we get .VERSION file from the previous stage..
+
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+
+  script: 
+   - echo "We are building the application"
+   - ls -la
+   - cat .VERSION
+   - export NEXT_VERSION=$(cut -d'=' -f2 < .VERSION)
+   - if [ -z "$NEXT_VERSION" ]; then echo "NEXT_VERSION is empty! Exiting..."; exit 1; fi
+   - echo "Building Docker image with version:$NEXT_VERSION"
+   - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+   - docker build --no-cache -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$NEXT_VERSION .
+   - docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME:$NEXT_VERSION
+   - echo "Finished building Docker image"
+   
+  only:
+    - main
