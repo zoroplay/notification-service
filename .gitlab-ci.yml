@@ -47,7 +47,7 @@ get_new_version:
 
 
 
-# ------------------- Build Stage --------------------
+# ------------------- Build Stage ---------------------
 build-application:
   stage: build
   dependencies:
