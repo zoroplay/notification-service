@@ -20,8 +20,8 @@ get_new_version:
     - echo "Node version:"
     - node -v
     - echo "Fetching latest from remote..."
-    - git fetch origin main
-    - git reset --hard origin/main
+    - git fetch origin staging
+    - git reset --hard origin/staging
     - echo "Installing semantic-release dependencies..."
     - yarn cache clean
     - yarn install
@@ -43,7 +43,7 @@ get_new_version:
       - .VERSION
     expire_in: "90 days"
   only:
-    - main
+    - staging
 
 
 
@@ -70,4 +70,4 @@ build-application:
    - echo "Finished building Docker image"
    
   only:
-    - main
+    - staging
