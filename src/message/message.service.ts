@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ClientIdRequest, CommonResponseObj, CreateMessageRequest, FindOneMessage, GetUserNotificationsRequest } from 'src/proto/noti.pb';
+import { ClientIdRequest, CommonResponseObj, CreateMessageRequest, FindOneMessage, GetUserNotificationsRequest, SendMessageRequest } from 'src/proto/noti.pb';
 
 @Injectable()
 export class MessageService {
@@ -76,7 +76,7 @@ export class MessageService {
       return {
         status: HttpStatus.OK,
         success: true,
-        message: 'Banner created successfully',
+        message: 'Message created successfully',
         data: message
       };
     } catch (err) {
@@ -159,15 +159,15 @@ export class MessageService {
         return {
         status: HttpStatus.OK,
         success: true,
-        message: 'Banner updated successfully',
+        message: 'Message updated successfully',
         data: updatedMessage
         };
 
     } catch (err) {
-        console.error('Error updating banner:', err);
+        console.error('Error updating message:', err);
         return {
         success: false,
-        message: "Failed to update banner",
+        message: "Failed to update message",
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         errors: err.message,
         data: null,
@@ -189,7 +189,7 @@ export class MessageService {
       return {
         status: HttpStatus.OK,
         success: true,
-        message: 'Banner created successfully',
+        message: 'Message created successfully',
         data: banner
       };
     } catch (err) {
@@ -203,5 +203,34 @@ export class MessageService {
         };
     }
   }
+
+  // async sendMessage(data: SendMessageRequest): Promise<CommonResponseObj> {
+  //   try {
+
+  //     const banner = await this.prisma.messages.create({
+  //       data: {
+  //         title: data.title,
+  //         clientID: data.clientId,
+  //         content: data.content
+  //       },
+    
+  //     });
+  //     return {
+  //       status: HttpStatus.OK,
+  //       success: true,
+  //       message: 'Banner created successfully',
+  //       data: banner
+  //     };
+  //   } catch (err) {
+  //       console.error(err);
+  //       return {
+  //           success: false,
+  //           message: "",
+  //           status: HttpStatus.BAD_REQUEST,
+  //           errors: err.message,
+  //           data: null,
+  //       };
+  //   }
+  // }
   
 }
