@@ -163,7 +163,7 @@ export class SmsService implements OnModuleInit {
         message:
           smsProvider.password === 'whatsapp_otp'
             ? otp
-            : `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}. Please visit https://bwinners.sn and use within 5 mins`,
+            : `Hello, Your ${smsProvider.senderID} confirmation code is ${otp}.`,
       };
 
       console.log("data", data);
@@ -423,59 +423,6 @@ export class SmsService implements OnModuleInit {
       };
     }
   }
-
-  // async sendMessageSmsense(
-  //   messageData: MessageData,
-  //   smsProvider: SettingData,
-  // ): Promise<any> {
-  //   try {
-  //     const trackingId = uuidv4();
-
-  //     // Log the API key and username for troubleshooting
-  //     console.log('SMS Provider Info:', {
-  //       senderId: smsProvider.senderID,
-  //       user: smsProvider.password,
-  //       name: smsProvider.username,
-  //     });
-
-  //     const senderId = smsProvider.senderID;
-  //     const username = smsProvider.username;
-  //     const password = smsProvider.password;
-  //     const clientId = smsProvider.clientId;
-
-  //     const otp = await this.generateOtp(messageData.receiver, clientId);
-  //     console.log('otp', otp);
-
-  //     const message = `Hello, Your Bwinners confirmation code is ${otp}. Please use within 5 minutes.`
-
-  //     // Send the SMS request
-  //     const response = await axios.post(
-  //       `${SMSENSE_API}/rest/send_sms?from=${senderId}&to=${messageData.receiver}&message=${message}&username=${username}&password=${password}`);
-
-  //     console.log('Response:', response);
-
-  //     // Check response status and save message
-  //     const isSuccess = response.data.status !== '-1';
-  //     messageData.status = isSuccess;
-  //     this.saveMessage({
-  //       data: messageData,
-  //       provider: smsProvider,
-  //       response: response.data,
-  //       trackingId,
-  //     });
-
-  //     return {
-  //       status: isSuccess,
-  //       message: response.data.processingNumber,
-  //     };
-  //   } catch (error) {
-  //     console.error('Error sending SMS:', error);
-  //     return {
-  //       status: false,
-  //       message: `Failed to send SMS: ${error.message}`,
-  //     };
-  //   }
-  // }
 
   async sendMessageSmsense(
     messageData: MessageData,
