@@ -184,6 +184,8 @@ export class SmsService implements OnModuleInit {
           return this.sendMessageRoberms(data, smsProvider);
         case 'smsense':
           return this.sendMessageSmsense(data, smsProvider);
+        case 'vasmobile':
+          return this.sendMessageVasMobile(data, smsProvider);
         default:
           return { success: false, message: 'SMS gateway does not exist in switch' };
       }
@@ -575,6 +577,64 @@ export class SmsService implements OnModuleInit {
     }
   }
 
+  async sendMessageVasMobile(
+    messageData: MessageData,
+    smsProvider: SettingData,
+  ): Promise<any> {
+    try {
+      const reference = this.generateId();
+
+      const payload = {
+        sms: [
+          {
+            id: reference,
+            receiver: messageData.receiver,
+            sender: messageData.sender,
+            message: messageData.message,
+            type: "sms",
+          }
+        ] 
+      };
+
+    
+    const username = smsProvider.username;   
+    const password = smsProvider.password;   
+
+    const basicAuthToken = Buffer
+      .from(`${username}:${password}`)
+      .toString('base64');
+
+      const response: { status: string; message: string; data: any } =
+        await axios.post('https://v2nmobile.com/api/push', payload, {
+          headers: {
+            Authorization: `Basic ${basicAuthToken}`,
+          },
+        });
+
+      if (response.data.status !== 200) {
+        messageData.status = false;
+        // save message as failed
+        this.saveMessage({
+          data: messageData,
+          provider: smsProvider,
+          response: response.data,
+        });
+        return { status: false, message: response.data.message };
+      } else {
+        messageData.status = true;
+        // save message as success
+        this.saveMessage({
+          data: messageData,
+          provider: smsProvider,
+          response: response.data,
+        });
+        return { status: true, message: response.data.message };
+      }
+    } catch (error) {
+      return { status: false, message: `Failed to send OTP: ${error.message}` };
+    }
+  }
+
   async sendMessageMetch(
     messageData: MessageData,
     smsProvider: SettingData,
@@ -761,4 +821,15 @@ export class SmsService implements OnModuleInit {
   remove(id: number) {
     return `This action removes a #${id} sm`;
   }
+
+  generateId(length = 10) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let id = '';
+    for (let i = 0; i < length; i++) {
+      id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    return id;
+  }
+
 }
