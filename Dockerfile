@@ -17,3 +17,5 @@ EXPOSE 80
 EXPOSE 5000
 ENTRYPOINT [ "/app/entrypoint.sh" ]
 CMD ["npm", "start"]
+
+## Dockerfile for development

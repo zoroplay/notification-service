@@ -1,8 +1,44 @@
 /* eslint-disable */
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { wrappers } from "protobufjs";
 import { Observable } from "rxjs";
+import { Struct } from "./google/protobuf/struct.pb";
 
 export const protobufPackage = "notification";
+
+/** Menu */
+export interface CreateMessageRequest {
+  title: string;
+  clientId: number;
+  content: string;
+  status: boolean;
+  id?: number | undefined;
+  createdAt?: string | undefined;
+  updatedAt?: string | undefined;
+}
+
+export interface FindOneMessage {
+  clientId: number;
+  id: number;
+}
+
+export interface ClientIdRequest {
+  clientId: number;
+}
+
+export interface CommonResponseObj {
+  status?: number | undefined;
+  success?: boolean | undefined;
+  message: string;
+  data?: { [key: string]: any } | undefined;
+  errors?: string | undefined;
+}
+
+export interface SendMessageRequest {
+  clientId: number;
+  messageId: number;
+  userId: string;
+}
 
 export interface HandleNotificationsRequest {
   userId: number;
@@ -103,6 +139,7 @@ export interface SendOtpRequest {
   clientID: number;
   phoneNumber: string;
   operator: string;
+  countryCode?: string | undefined;
 }
 
 export interface VerifyOtpRequest {
@@ -133,6 +170,8 @@ export interface DeliveryReportResponse {
 
 export const NOTIFICATION_PACKAGE_NAME = "notification";
 
+wrappers[".google.protobuf.Struct"] = { fromObject: Struct.wrap, toObject: Struct.unwrap } as any;
+
 export interface NotificationServiceClient {
   setReadNotifications(request: SetReadNotificationsRequest): Observable<SetReadNotificationsResponse>;
 
@@ -151,6 +190,24 @@ export interface NotificationServiceClient {
   verifyOtp(request: VerifyOtpRequest): Observable<SendSmsResponse>;
 
   getDeliveryReport(request: DeliveryReportRequest): Observable<DeliveryReportResponse>;
+
+  findOneMessage(request: FindOneMessage): Observable<CommonResponseObj>;
+
+  findAllMessages(request: ClientIdRequest): Observable<CommonResponseObj>;
+
+  updateMessage(request: CreateMessageRequest): Observable<CommonResponseObj>;
+
+  deleteMessage(request: FindOneMessage): Observable<CommonResponseObj>;
+
+  createMessage(request: CreateMessageRequest): Observable<CommonResponseObj>;
+
+  sendMessage(request: SendMessageRequest): Observable<CommonResponseObj>;
+
+  findUserMessages(request: GetUserNotificationsRequest): Observable<CommonResponseObj>;
+
+  updateUserMessage(request: FindOneMessage): Observable<CommonResponseObj>;
+
+  deleteUserMessage(request: FindOneMessage): Observable<CommonResponseObj>;
 }
 
 export interface NotificationServiceController {
@@ -183,6 +240,42 @@ export interface NotificationServiceController {
   getDeliveryReport(
     request: DeliveryReportRequest,
   ): Promise<DeliveryReportResponse> | Observable<DeliveryReportResponse> | DeliveryReportResponse;
+
+  findOneMessage(
+    request: FindOneMessage,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  findAllMessages(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  updateMessage(
+    request: CreateMessageRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  deleteMessage(
+    request: FindOneMessage,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  createMessage(
+    request: CreateMessageRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  sendMessage(
+    request: SendMessageRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  findUserMessages(
+    request: GetUserNotificationsRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  updateUserMessage(
+    request: FindOneMessage,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  deleteUserMessage(
+    request: FindOneMessage,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
 }
 
 export function NotificationServiceControllerMethods() {
@@ -197,6 +290,15 @@ export function NotificationServiceControllerMethods() {
       "sendOtp",
       "verifyOtp",
       "getDeliveryReport",
+      "findOneMessage",
+      "findAllMessages",
+      "updateMessage",
+      "deleteMessage",
+      "createMessage",
+      "sendMessage",
+      "findUserMessages",
+      "updateUserMessage",
+      "deleteUserMessage",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
