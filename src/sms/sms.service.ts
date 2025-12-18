@@ -611,6 +611,8 @@ export class SmsService implements OnModuleInit {
           },
         });
 
+        console.log("response", response);
+
       if (response.data.status !== 200) {
         messageData.status = false;
         // save message as failed
