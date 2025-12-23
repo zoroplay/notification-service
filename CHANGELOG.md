@@ -1,3 +1,10 @@
+# [1.0.0-staging.6](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.5...v1.0.0-staging.6) (2025-12-23)
+
+
+### Bug Fixes
+
+* use container hostnames for Redis and RabbitMQ connections ([fb61452](https://github.com/zoroplay/notification-service/commit/fb614526ec04a5a8cec0f74804fd7ef659117bb7))
+
 # [1.0.0-staging.5](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.4...v1.0.0-staging.5) (2025-12-23)
 
 
