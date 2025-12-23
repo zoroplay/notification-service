@@ -231,7 +231,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }} '
             cd ~/notification-service
-            docker compose run --rm notification-service yarn migration:run
+            docker compose run --rm notification-service npx prisma migrate deploy
           '
 
   deploy-production:
