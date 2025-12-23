@@ -13,12 +13,11 @@ module.exports = {
     '@semantic-release/commit-analyzer',
     '@semantic-release/release-notes-generator',
     '@semantic-release/changelog',
-    [
-      '@semantic-release/exec',
-      {
-        verifyReleaseCmd: 'echo ${nextRelease.version} > .VERSION',
-      },
-    ],
+    ['@semantic-release/github', {
+      successComment: false,
+      failComment: false,
+      releasedLabels: false
+    }],
     '@semantic-release/git',
   ],
   preset: 'angular',
