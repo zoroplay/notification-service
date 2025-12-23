@@ -20,4 +20,4 @@ services:
 
 networks:
   sbenet:
-    driver: bridge
+    external: true
