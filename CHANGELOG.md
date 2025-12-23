@@ -1,3 +1,10 @@
+# [1.0.0-staging.4](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.3...v1.0.0-staging.4) (2025-12-23)
+
+
+### Bug Fixes
+
+* update Redis host to localhost to resolve connection error ([21c99b5](https://github.com/zoroplay/notification-service/commit/21c99b5c28ecfc508d469bfaff9d7975ab55f90b))
+
 # [1.0.0-staging.3](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.2...v1.0.0-staging.3) (2025-12-23)
 
 
