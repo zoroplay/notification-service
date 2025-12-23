@@ -1,3 +1,10 @@
+# [1.0.0-staging.2](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.1...v1.0.0-staging.2) (2025-12-23)
+
+
+### Bug Fixes
+
+* simplify Dockerfile to resolve container startup issues ([987c44e](https://github.com/zoroplay/notification-service/commit/987c44ec9232105dba59865ec35bb83ae719d374))
+
 # 1.0.0-staging.1 (2025-12-23)
 
 
