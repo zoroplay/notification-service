@@ -7,7 +7,7 @@ module.exports = {
     { name: 'main' },
     { name: 'staging', prerelease: 'staging' },
   ],
-  repositoryUrl: 'https://oauth2:glpat-33an5NfJQm9UEmX0FCqscW86MQp1Omc0ZHhhCw.01.1218fj9q7@gitlab.com/sbe-developers/notification-service.git',
+  repositoryUrl: 'https://github.com/zoroplay/notification-service.git',
   tagFormat: 'v${version}',
   plugins: [
     '@semantic-release/commit-analyzer',
