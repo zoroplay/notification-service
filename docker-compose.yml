@@ -3,7 +3,7 @@ services:
     image: ghcr.io/zoroplay/notification-service:latest
     container_name: notification-service
     ports:
-      - "59013:5000"
+      - "9013:5000"
     env_file:
       - .env
     deploy:
