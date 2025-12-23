@@ -1,0 +1,12 @@
+# 1.0.0-staging.1 (2025-12-23)
+
+
+### Bug Fixes
+
+* added logs ([afd3bce](https://github.com/zoroplay/notification-service/commit/afd3bce83d77f34f0f7967943280d79be1bacb72))
+* fixed env file ([1ef7d6f](https://github.com/zoroplay/notification-service/commit/1ef7d6f53f3d8734cc5021b13bad63fc3b4d63bd))
+* merge remote staging with local changes ([c80adc1](https://github.com/zoroplay/notification-service/commit/c80adc16db75599797ebae520dff35abd4a96cea))
+* modified sms ([84699a6](https://github.com/zoroplay/notification-service/commit/84699a68383b6f75e577396353c5b30f2d9a4365))
+* trigger empty release ([d3cd220](https://github.com/zoroplay/notification-service/commit/d3cd22066ed42cc98a0ef2c0a75004464fc0eaeb))
+* trigger empty release ([2f3ff2c](https://github.com/zoroplay/notification-service/commit/2f3ff2ca462420fd95537e9f328f60e1373f86e2))
+* vasmobile integration ([90b5387](https://github.com/zoroplay/notification-service/commit/90b53872a9735f46706d60dc648c42f07951683e))
