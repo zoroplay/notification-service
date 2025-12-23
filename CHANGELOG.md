@@ -1,3 +1,10 @@
+# [1.0.0-staging.5](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.4...v1.0.0-staging.5) (2025-12-23)
+
+
+### Bug Fixes
+
+* use bridge driver for sbenet network configuration ([a9cc243](https://github.com/zoroplay/notification-service/commit/a9cc243aeaa97be6d651b4de1e111022943c6c15))
+
 # [1.0.0-staging.4](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.3...v1.0.0-staging.4) (2025-12-23)
 
 
