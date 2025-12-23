@@ -125,7 +125,7 @@ jobs:
           cat > release.config.js << 'EOF'
           module.exports = {
             branches: [
-              { name: 'master' },
+              { name: 'main' },
               { name: 'staging', prerelease: 'staging' },
             ],
             repositoryUrl: 'https://github.com/${{ github.repository }}.git',
