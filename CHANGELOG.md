@@ -1,3 +1,10 @@
+# [1.0.0-staging.7](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.6...v1.0.0-staging.7) (2025-12-23)
+
+
+### Bug Fixes
+
+* use external sbenet network to connect with Redis and other services ([fd0e5ba](https://github.com/zoroplay/notification-service/commit/fd0e5bab08e62117ac220d67c8b4cb72bbb867fd))
+
 # [1.0.0-staging.6](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.5...v1.0.0-staging.6) (2025-12-23)
 
 
