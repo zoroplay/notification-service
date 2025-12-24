@@ -1,3 +1,10 @@
+# [1.0.0-staging.8](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.7...v1.0.0-staging.8) (2025-12-24)
+
+
+### Bug Fixes
+
+* add Redis password authentication to cache configuration ([a83bea7](https://github.com/zoroplay/notification-service/commit/a83bea745745b9062534f68debbc9dd73265b105))
+
 # [1.0.0-staging.7](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.6...v1.0.0-staging.7) (2025-12-23)
 
 
