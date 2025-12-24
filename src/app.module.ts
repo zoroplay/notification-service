@@ -36,6 +36,7 @@ const configService = new ConfigService();
       store: redisStore,
       host: configService.get<string>('REDIS_HOST'),
       port: parseInt(configService.get<string>('REDIS_PORT')!),
+      password: configService.get<string>('REDIS_PASSWORD'),
     }),
     SmsModule,
     MessageModule
