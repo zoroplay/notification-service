@@ -1,0 +1,2333 @@
+/* eslint-disable */
+import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { wrappers } from "protobufjs";
+import { Observable } from "rxjs";
+import { Struct } from "./google/protobuf/struct.pb";
+
+export const protobufPackage = "identity";
+
+/** Top affiliate information */
+export interface TopAffiliate {
+  affiliateId: number;
+  username?: string | undefined;
+  signupCount: number;
+  totalDeposit?: number | undefined;
+  totalWithdraw?: number | undefined;
+}
+
+/** Data payload for affiliate statistics */
+export interface AffiliateStatsData {
+  totalUsers: number;
+  topAffiliates: TopAffiliate[];
+}
+
+/** Response message for affiliate statistics */
+export interface AffiliateStatsResponse {
+  success: boolean;
+  message: string;
+  data: AffiliateStatsData | undefined;
+}
+
+export interface ArrayResponse {
+  status: number;
+  success: boolean;
+  message: string;
+  data: number[];
+}
+
+export interface AffiliateRequest {
+  clientId: number;
+  affiliateId?: number | undefined;
+  startDate?: string | undefined;
+  endDate?: string | undefined;
+  page?: number | undefined;
+  limit?: number | undefined;
+  search?: string | undefined;
+}
+
+export interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface AffiliateResponse {
+  status?: number | undefined;
+  success?: boolean | undefined;
+  message: string;
+  data: { [key: string]: any }[];
+  totalUsers?: number | undefined;
+  activeUsers?: number | undefined;
+  dormantUsers?: number | undefined;
+  totalDepositAmount?: number | undefined;
+  totalWithdrawAmount?: number | undefined;
+  pagination?: Pagination | undefined;
+}
+
+export interface AddAndRemoveUserRequest {
+  clientId: number;
+  agentId: number;
+  userId: number;
+  type: string;
+}
+
+export interface FindUserIdRequest {
+  affiliateId: number;
+}
+
+export interface ListBanksRequest {
+  page: number;
+  limit: number;
+}
+
+export interface KycRequest {
+  clientId: number;
+  userId: number;
+  documentType: string;
+  documentNumber: string;
+  userName: string;
+  lastName?: string | undefined;
+  bankCode?: string | undefined;
+}
+
+export interface BasicUser {
+  id: number;
+  username: string;
+  role: string;
+  clientId: number;
+}
+
+export interface ClientIdRequest {
+  clientId: number;
+  slug?: string | undefined;
+  query?: string | undefined;
+}
+
+export interface FindOneRequest {
+  clientId: number;
+  id: number;
+}
+
+export interface ApprovalRequest {
+  agentId: number;
+  userId: number;
+}
+
+/** Additional Audit Info */
+export interface AdditionalInfo {
+  browser: string;
+  os: string;
+  platform: string;
+}
+
+/** Banner */
+export interface CreateBannerRequest {
+  title: string;
+  bannerType: string;
+  clientId: number;
+  target: string;
+  position: string;
+  slug?: string | undefined;
+  link: string;
+  content: string;
+  image: string;
+  sport?: string | undefined;
+  category?: string | undefined;
+  tournament?: string | undefined;
+  event?: string | undefined;
+  id?: number | undefined;
+  storyImage?: string | undefined;
+}
+
+/** Pages */
+export interface CreatePageRequest {
+  title: string;
+  clientId: number;
+  url?: string | undefined;
+  content: string;
+  slug?: string | undefined;
+  createdBy: string;
+  target: string;
+  id?: number | undefined;
+}
+
+/** Menu */
+export interface CreateMenuRequest {
+  title: string;
+  clientId: number;
+  link: string;
+  newWindow: boolean;
+  slug?: string | undefined;
+  status: boolean;
+  target: string;
+  id?: number | undefined;
+  order?: string | undefined;
+  parentId?: string | undefined;
+}
+
+export interface AuditLog {
+  id: number;
+  userId: number;
+  userName: string;
+  clientId: number;
+  action: string;
+  endpoint: string;
+  method: string;
+  statusCode: number;
+  payload: string;
+  response: string;
+  additionalInfo: AdditionalInfo | undefined;
+  ipAddress: string;
+  userAgent: string;
+  timestamp: string;
+  target: string;
+}
+
+/** Request message for creating an audit log */
+export interface CreateLogRequest {
+  auditLog: AuditLog | undefined;
+}
+
+/** audit User */
+export interface AuditUser {
+  roleId: number;
+  username: string;
+}
+
+/** Response message for creating an audit log */
+export interface CreateLogResponse {
+  success: boolean;
+  status: number;
+  message: string;
+}
+
+export interface AuditQuery {
+  startDate?: string | undefined;
+  endDate?: string | undefined;
+  page?: number | undefined;
+  perPage?: number | undefined;
+  username?: string | undefined;
+  platform?: string | undefined;
+  ipAddress?: string | undefined;
+}
+
+/** GetAllLogs */
+export interface GetAllLogsRequest {
+  clientId?: number | undefined;
+  userName?: string | undefined;
+  page?: number | undefined;
+  limit?: number | undefined;
+  ipAddress: string;
+  userAgent: string;
+  os: string;
+  browser: string;
+  platform: string;
+  endpoint: string;
+  method: string;
+  auditQuery: AuditQuery | undefined;
+}
+
+/** GetAllLogsResponse */
+export interface GetAllLogsResponse {
+  logs: AuditLog[];
+  meta?: Meta | undefined;
+}
+
+/** HandlePin */
+export interface HandlePinRequest {
+  pin: number;
+  confirmPin?: number | undefined;
+  userId: number;
+  type: string;
+}
+
+export interface GetNetworkSalesRequest {
+  clientId: number;
+  from: string;
+  to: string;
+  product: string;
+}
+
+export interface DailyTransactionsRequest {
+  userId: number;
+  normalSales?: number | undefined;
+  normalPayout?: number | undefined;
+  onlineSales?: number | undefined;
+  onlinePayout?: number | undefined;
+  cashIn?: number | undefined;
+  cashOut?: number | undefined;
+  expenses?: number | undefined;
+  openingbalance?: number | undefined;
+  closingbalance?: number | undefined;
+  date: string;
+}
+
+/** HandleTransfer */
+export interface HandleTransferRequest {
+  pin: number;
+  clientId: number;
+  fromUserId: number;
+  toUsername: string;
+  amount: number;
+}
+
+/** Power Bonus */
+export interface PowerRequest {
+  agentIds: number[];
+  clientId: number;
+  fromDate: string;
+  toDate: string;
+}
+
+export interface BetData {
+  id?: number | undefined;
+  betId: number;
+  userId: number;
+  clientId: number;
+  selectionCount: number;
+  cancelledDate?: string | undefined;
+  settledDate?: string | undefined;
+  stake: number;
+  commission: number;
+  winnings: number;
+  weightedStake: number;
+  odds: number;
+  createdAt?: string | undefined;
+  updatedAt?: string | undefined;
+}
+
+export interface Response {
+  success: boolean;
+  message: string;
+}
+
+export interface CurrentWeekData {
+  totalWeeks: number;
+  currentWeek: number;
+  noOfTickets: number;
+  played: number;
+  won: number;
+  net: number;
+  commission: number;
+}
+
+export interface CurrentMonth {
+  month: string;
+}
+
+export interface Meta {
+  total?: number | undefined;
+  totalPages?: number | undefined;
+  currentPage: number;
+  itemsPerPage: number;
+}
+
+export interface NormalResponse {
+  success?: boolean | undefined;
+  message?: string | undefined;
+  data: NormalPayout[];
+  meta?: Meta | undefined;
+}
+
+export interface PayNormalResponse {
+  success: boolean;
+  message: string;
+  data: number;
+}
+
+export interface NormalPayout {
+  id?: number | undefined;
+  betId: number;
+  selectionsCount: number;
+  totalOdds: number;
+  stake: number;
+  cashierId: number;
+  profileId: number;
+  profileGroup: string;
+  commission: number;
+  isPaid: boolean;
+  createdAt?: string | undefined;
+  updatedAt?: string | undefined;
+}
+
+export interface PowerBonusData {
+  id?: number | undefined;
+  totalStake: number;
+  totalTickets: number;
+  totalWeightedStake: number;
+  averageNoOfSelections: number;
+  grossProfit: number;
+  ggrPercent: number;
+  rateIsLess: number;
+  rateIsMore: number;
+  rate: number;
+  turnoverCommission: number;
+  monthlyBonus: number;
+  totalWinnings: number;
+  bets: BetData[];
+  createdAt?: string | undefined;
+  updatedAt?: string | undefined;
+}
+
+export interface PayPowerRequest {
+  clientId: number;
+  agentIds: number[];
+  fromDate: string;
+  toDate: string;
+  provider: string;
+}
+
+export interface PowerCountData {
+  paidUsers: string[];
+  unPaidUsers: string[];
+  errors: string[];
+}
+
+export interface PowerResponse {
+  success: boolean;
+  message: string;
+  data: PowerCountData | undefined;
+}
+
+export interface PowerBonusResponse {
+  success: boolean;
+  message: string;
+  data: PowerBonusData | undefined;
+}
+
+/** Normal Bonus */
+export interface GetNormalRequest {
+  clientId: number;
+  fromDate: string;
+  toDate: string;
+  provider: string;
+  meta?: Meta | undefined;
+}
+
+export interface PayNormalRequest {
+  id?: number | undefined;
+  betId: number;
+  selectionsCount: number;
+  totalOdds: number;
+  stake: number;
+  clientId: number;
+  cashierId: number;
+  profileId?: number | undefined;
+  commission?: number | undefined;
+  profileGroup: string;
+  isPaid?: boolean | undefined;
+}
+
+/** Bonus */
+export interface BonusGroup {
+  group: string;
+  maxSelection: number;
+  minSelection: number;
+  rate: number;
+  rateIsLess: number;
+  rateIsMore: number;
+  targetCoupon: number;
+  targetStake: number;
+  createdAt?: string | undefined;
+  updatedAt?: string | undefined;
+}
+
+export interface BonusGroups {
+  clientId: number;
+  bonusGroups: BonusGroup[];
+}
+
+export interface BonusGroupResponse {
+  success: boolean;
+  message: string;
+  data: BonusGroup[];
+}
+
+export interface GetAgentUserRequest {
+  clientId: number;
+  userId: number;
+}
+
+export interface GetAgentUsersRequest {
+  clientId: number;
+  userId?: number | undefined;
+  username?: string | undefined;
+  roleId?: number | undefined;
+  state?: number | undefined;
+  page?: number | undefined;
+  pageSize?: number | undefined;
+  search?: string | undefined;
+  order?: string | undefined;
+  orderBy?: string | undefined;
+}
+
+export interface GetCommissionsRequest {
+  clientId: number;
+  provider?: string | undefined;
+}
+
+export interface CalculateCommissionRequest {
+  clientId: number;
+  userId: number;
+  stake: number;
+  totalOdds: number;
+  provider: string;
+  noOfSelections: number;
+}
+
+export interface PayoutCommissionRequest {
+  data: PayoutCommissionData[];
+}
+
+export interface PayoutCommissionData {
+  clientId: number;
+  userId: number;
+  stake: number;
+  totalSales: number;
+  provider: string;
+  totalWon: number;
+  totalTickets: number;
+  net: number;
+  commission: number;
+  profit: number;
+  commissionId: number;
+  startDate: string;
+  endDate: string;
+}
+
+/** Commission Profile */
+export interface CommissionProfile {
+  clientId: number;
+  id?: number | undefined;
+  name: string;
+  isDefault?: boolean | undefined;
+  description: string;
+  providerGroup: string;
+  period: string;
+  calculationType: string;
+  percentage: number;
+  commissionType: number;
+  turnovers: CommissionTurnover[];
+  createdAt?: string | undefined;
+  updatedAt?: string | undefined;
+}
+
+export interface SingleItemRequest {
+  itemId: number;
+}
+
+export interface AssignUserCommissionProfile {
+  profileId: number;
+  userId: number;
+  createdAt?: string | undefined;
+  updatedAt?: string | undefined;
+}
+
+export interface Commission {
+  id?: number | undefined;
+  userId: number;
+  totalTickets: number;
+  totalSales: number;
+  totalWon: number;
+  net: number;
+  commission: number;
+  startDate: string;
+  endDate: string;
+  isPaid: boolean;
+  userCommissionProfileId: number;
+  createdAt?: string | undefined;
+  updatedAt?: string | undefined;
+}
+
+export interface CommissionTurnover {
+  id?: number | undefined;
+  event: number;
+  commissionProfile?: CommissionProfile | undefined;
+  percentage: number;
+  maxOdd: number;
+  minOdd: number;
+  oddSet: boolean;
+  createdAt?: string | undefined;
+  updatedAt?: string | undefined;
+}
+
+export interface GetRiskSettingRequest {
+  clientId: number;
+  userId: number;
+}
+
+export interface FindUserRequest {
+  userId: number;
+  status?: number | undefined;
+}
+
+export interface GetUserIdNameRequest {
+  username: string;
+  clientId?: number | undefined;
+}
+
+export interface GetUserIdNameResponse {
+  data: GetUserIdNameResponse_Users[];
+}
+
+export interface GetUserIdNameResponse_Users {
+  id: number;
+  username: string;
+}
+
+export interface GetWithdrawalSettingsRequest {
+  clientId: number;
+  userId?: number | undefined;
+}
+
+export interface WithdrawalSettingsResponse {
+  autoDisbursement: number;
+  autoDisbursementMin: number;
+  autoDisbursementMax: number;
+  autoDisbursementCount: number;
+  minimumWithdrawal: number;
+  maximumWithdrawal: number;
+  allowWithdrawalComm: number;
+  withdrawalComm: number;
+}
+
+export interface PlaceBetRequest {
+  selections: BetSelection[];
+  clientId: number;
+  userId?: number | undefined;
+  stake: number;
+  source: string;
+  ipAddress: string;
+  betType: string;
+  username?: string | undefined;
+  minBonus: number;
+  maxBonus: number;
+  minOdds: number;
+  totalOdds: number;
+  type: string;
+  isBooking: number;
+  bonusId?: number | undefined;
+  useBonus?: boolean | undefined;
+}
+
+export interface BetSelection {
+  eventName: string;
+  eventType: string;
+  eventId: number;
+  producerId: number;
+  marketId: number;
+  marketName: string;
+  specifier: string;
+  outcomeId: string;
+  outcomeName: string;
+  odds: number;
+  sportId: number;
+  sport: string;
+  tournament: string;
+  category: string;
+  matchId: number;
+  awayTeam: string;
+  homeTeam: string;
+  type: string;
+  fixed: boolean;
+  selectionId: string;
+  eventDate: string;
+  eventPrefix: string;
+  isBonus?: boolean | undefined;
+}
+
+export interface GetSettingsRequest {
+  clientId: number;
+  category: string;
+}
+
+export interface SettingsRequest {
+  clientId: number;
+  inputs: string;
+  category?: string | undefined;
+  period?: string | undefined;
+}
+
+export interface UserRiskSettingsRequest {
+  userId: number;
+  inputs: string;
+  period: string;
+}
+
+export interface SaveSegmentRequest {
+  clientId: number;
+  userId: number;
+  title: string;
+  minOdd: number;
+  minSelection: number;
+  message: string;
+  id?: number | undefined;
+}
+
+export interface GrantBonusRequest {
+  clientId: number;
+  segmentId: number;
+  bonusId: number;
+  amount: number;
+}
+
+export interface FetchPlayerSegmentRequest {
+  clientId: number;
+}
+
+export interface GetSegmentPlayerRequest {
+  segmentId: number;
+}
+
+export interface DeleteItemRequest {
+  id: number;
+}
+
+export interface AddToSegmentRequest {
+  clientId: number;
+  playerId: number;
+  segmentId: number;
+}
+
+export interface UploadPlayersToSegment {
+  clientId: number;
+  segmentId: number;
+  players: string[];
+}
+
+export interface FetchPlayerFilterRequest {
+  clientId: number;
+  startDate: string;
+  endDate: string;
+  minAmount: number;
+  maxAmount: number;
+  depositCount: number;
+  filterType: number;
+  page: number;
+}
+
+export interface FetchPlayerFilterResponse {
+  status: number;
+  success: boolean;
+  data: UserInfo[];
+  error?: string | undefined;
+}
+
+export interface TransactionEntity {
+  id: number;
+  clientId: number;
+  userId: number;
+  username: string;
+  transactionNo: string;
+  amount: number;
+  transactionType: string;
+  subject: string;
+  description: string;
+  source: string;
+  channel: string;
+  balance: number;
+  status: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserInfo {
+  id: number;
+  roleId: string;
+  code: string;
+  email: string;
+  username: string;
+  password: string;
+  lastLogin: string;
+  authCode: string;
+  virtualToken: string;
+  registrationSource: string;
+  verified: boolean;
+  status: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lossCount: number;
+  betCount: number;
+  stakeAmount: number;
+  lastPlayed: string;
+  totalBalance: number;
+}
+
+export interface UserData {
+  id: number;
+  username: string;
+  balance: number;
+  code?: string | undefined;
+  firstName: string;
+  lastName?: string | undefined;
+  email?: string | undefined;
+  phone?: string | undefined;
+  role?: string | undefined;
+  roleId?: number | undefined;
+  availableBalance?: number | undefined;
+  sportBonusBalance?: number | undefined;
+  casinoBonusBalance?: number | undefined;
+  virtualBonusBalance?: number | undefined;
+  trustBalance?: number | undefined;
+  token: string;
+  registered: string;
+  authCode: string;
+  country: string;
+  currency: string;
+  city: string;
+  address: string;
+  gender: string;
+  dateOfBirth: string;
+  status: number;
+  group: string;
+  virtualToken?: string | undefined;
+  affiliateAccess?: boolean | undefined;
+}
+
+export interface ChangeUserTypeStatusRequest {
+  userId: number;
+  initialType: number;
+  currentType: number;
+}
+
+export interface CreateUserRequest {
+  clientId: number;
+  username: string;
+  password: string;
+  email?: string | undefined;
+  roleId?: number | undefined;
+  firstName?: string | undefined;
+  lastName?: string | undefined;
+  phoneNumber?: string | undefined;
+  gender?: string | undefined;
+  dateOfBirth?: string | undefined;
+  country?: string | undefined;
+  state?: string | undefined;
+  city?: string | undefined;
+  address?: string | undefined;
+  language?: string | undefined;
+  currency?: string | undefined;
+  parent?: number | undefined;
+  promoCode?: string | undefined;
+  trackingToken?: string | undefined;
+  parentId?: number | undefined;
+  balance?: number | undefined;
+  isTest?: boolean | undefined;
+  affiliateId?: number | undefined;
+}
+
+export interface CreateAgentRequest {
+  clientId: number;
+  username: string;
+  password: string;
+  email?: string | undefined;
+  roleId?: number | undefined;
+  firstName?: string | undefined;
+  lastName?: string | undefined;
+  phoneNumber?: string | undefined;
+  city?: string | undefined;
+  address?: string | undefined;
+  isApproved?: boolean | undefined;
+}
+
+export interface UpdateUserRequest {
+  clientId: number;
+  userId: number;
+  username?: string | undefined;
+  password?: string | undefined;
+  email?: string | undefined;
+  roleId?: number | undefined;
+  firstName?: string | undefined;
+  lastName?: string | undefined;
+  phoneNumber?: string | undefined;
+  gender?: string | undefined;
+  dateOfBirth?: string | undefined;
+  country?: string | undefined;
+  state?: string | undefined;
+  city?: string | undefined;
+  address?: string | undefined;
+  language?: string | undefined;
+  currency?: string | undefined;
+  parent?: number | undefined;
+  promoCode?: string | undefined;
+  trackingToken?: string | undefined;
+  parentId?: string | undefined;
+  lga?: string | undefined;
+  status?: number | undefined;
+}
+
+/** user */
+export interface User {
+  userID: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  city: string;
+  country: string;
+  gender: string;
+  currency: string;
+  phone: string;
+  roleId: string;
+  username: string;
+  address: string;
+  state: string;
+}
+
+export interface RegisterResponse {
+  status: number;
+  success: boolean;
+  data: UserData | undefined;
+  error?: string | undefined;
+}
+
+/** Login */
+export interface LoginRequest {
+  clientId: number;
+  username: string;
+  password: string;
+  source?: string | undefined;
+}
+
+export interface LoginResponse {
+  status: number;
+  success: boolean;
+  data: UserData | undefined;
+  error?: string | undefined;
+}
+
+export interface GetUserDetailsRequest {
+  clientId: number;
+  userId: number;
+}
+
+export interface GetUserDetailsResponse {
+  status: number;
+  success: boolean;
+  message: string;
+  data: UserData | undefined;
+}
+
+/** Validate */
+export interface ValidateRequest {
+  token: string;
+}
+
+export interface ValidateTestRequest {
+  accountId: number;
+}
+
+export interface ValidateTestResponse {
+  isTest: boolean;
+  status: number;
+  success: boolean;
+  message: string;
+}
+
+export interface ListTestAccountsRequest {
+  clientId: number;
+  page?: number | undefined;
+  PerPage?: number | undefined;
+}
+
+export interface ValidateResponse {
+  status: number;
+  error: string;
+  user?: ValidateResponse_User | undefined;
+}
+
+export interface ValidateResponse_User {
+  id: number;
+  username: string;
+  role?: string | undefined;
+}
+
+export interface ValidateClientResponse {
+  status: number;
+  error: string;
+  clientId: number;
+}
+
+export interface ValidateGroupCodeRequest {
+  groupName: string;
+}
+
+export interface ValidateGroupCodeResponse {
+  status: number;
+  error: string;
+  groupName: string;
+  clientId: number;
+}
+
+export interface ClientRequest {
+  name: string;
+  country: string;
+  currency: string;
+  apiUrl: string;
+  webUrl: string;
+  mobileUrl: string;
+  shopUrl: string;
+  contactNumber: string;
+  contactEmail: string;
+  clientID: string;
+}
+
+export interface RemoveClientRequest {
+  clientID: string;
+}
+
+export interface RemovePermissionRequest {
+  permissionID: string;
+}
+
+export interface RoleRequest {
+  name?: string | undefined;
+  description?: string | undefined;
+  type?: string | undefined;
+  roleID?: string | undefined;
+}
+
+export interface SaveRoleResponse {
+  status: boolean;
+  message: string;
+  data: Role | undefined;
+  errors?: string | undefined;
+}
+
+export interface GetRolesResponse {
+  status: boolean;
+  message: string;
+  data: Role[];
+  errors?: string | undefined;
+}
+
+export interface RemoveRoleRequest {
+  roleID: string;
+}
+
+export interface Role {
+  id: number;
+  name: string;
+  description: string;
+  type: string;
+}
+
+export interface PermissionRequest {
+  name: string;
+  description: string;
+  permissionID: string;
+  roleID: string;
+}
+
+export interface AssignRolePermissionRequest {
+  roleID: number;
+  permissionIDs: number[];
+}
+
+export interface GetPaymentDataRequest {
+  clientId: number;
+  userId: number;
+  source: string;
+}
+
+export interface GetPaymentDataResponse {
+  username: string;
+  email: string;
+  callbackUrl: string;
+  siteUrl: string;
+  currency?: string | undefined;
+  country?: string | undefined;
+  pin?: string | undefined;
+}
+
+export interface GetClientRequest {
+  id: number;
+}
+
+export interface GetClientResponse {
+  status: boolean;
+  message: string;
+  data: ClientData | undefined;
+  errors?: string | undefined;
+}
+
+export interface CommonResponseArray {
+  status?: number | undefined;
+  success?: boolean | undefined;
+  message: string;
+  data: { [key: string]: any }[];
+  errors?: string | undefined;
+}
+
+export interface CommonResponseObj {
+  status?: number | undefined;
+  success?: boolean | undefined;
+  message: string;
+  data?: { [key: string]: any } | undefined;
+  errors?: string | undefined;
+}
+
+export interface ClientData {
+  name: string;
+  country: string;
+  currency: string;
+  website: string;
+  contactNumber: string;
+  contactEmail: string;
+}
+
+export interface SearchPlayerRequest {
+  clientId: number;
+  searchKey: string;
+}
+
+export interface SearchPlayerResponse {
+  success: boolean;
+  message: string;
+  data: Player[];
+}
+
+export interface Player {
+  id: number;
+  code: string;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  registered: string;
+  country: string;
+  currency: string;
+  status: number;
+  verified: number;
+  balance: number;
+  bonus: number;
+  lifeTimeDeposit: number;
+  lifeTimeWithdrawal: number;
+  openBets: number;
+  role: string;
+  lastLogin: string;
+}
+
+export interface GetUserByUsernameRequest {
+  clientId: number;
+  username: string;
+}
+
+export interface GetUserByUsernameResponse {
+  responseCode: string;
+  responseMessage: string;
+  data: GetUserByUsernameResponse_Data | undefined;
+}
+
+export interface GetUserByUsernameResponse_Data {
+  referenceID?: string | undefined;
+  CustomerName?: string | undefined;
+  Phoneno?: string | undefined;
+  Status?: string | undefined;
+}
+
+export interface LoggedInUserData {
+  timestamp: string;
+  ipAddress: string;
+  userAgent: string;
+  action: number;
+  description: string;
+  userId: number;
+}
+
+export interface GetUserLogResponse {
+  message: string;
+  status: number;
+  loggedInUserData: LoggedInUserData[];
+  metaData: MetaData | undefined;
+}
+
+export interface OnlinePlayersRequest {
+  clientId: number;
+  username: string;
+  country: string;
+  state: string;
+  source: string;
+  page?: number | undefined;
+  limit?: number | undefined;
+  type?: string | undefined;
+}
+
+export interface RegistrationReportRequest {
+  clientId: number;
+  from: string;
+  to: string;
+  source: string;
+  page?: number | undefined;
+  limit?: number | undefined;
+  reportType?: string | undefined;
+}
+
+export interface PlayersListResponse {
+  from: number;
+  to: number;
+  total: number;
+  currentPage: number;
+  perPage: number;
+  data: Player[];
+}
+
+export interface GetPlayerDataRequest {
+  clientId: number;
+  userId: number;
+}
+
+export interface GetPlayerDataResponse {
+  success: boolean;
+  message: string;
+  data?: GetPlayerDataResponse_PlayerData | undefined;
+}
+
+export interface GetPlayerDataResponse_PlayerData {
+  user: Player | undefined;
+  wallet: PlayerWalletData | undefined;
+  bonus: PlayerBonusData | undefined;
+}
+
+export interface UpdatePlayerDataRequest {
+  clientId: number;
+  userId: number;
+  username: string;
+  country: string;
+  state: string;
+  address: string;
+  email: string;
+  dateOfBirth: string;
+  phoneNumber: string;
+  currency: string;
+  language: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface PlayerWalletData {
+  sportBalance: number;
+  totalDeposits: number;
+  sportBonusBalance: number;
+  totalWithdrawals: number;
+  pendingWithdrawals: number;
+  avgWithdrawals: number;
+  lastDepositDate: string;
+  lastWithdrawalDate: string;
+  lastDepositAmount: number;
+  lastWithdrawalAmount: number;
+  firstActivityDate: string;
+  lastActivityDate: string;
+  noOfDeposits: number;
+  noOfWithdrawals: number;
+}
+
+export interface PlayerBonusData {
+}
+
+export interface ChangePasswordRequest {
+  clientId: number;
+  userId: number;
+  oldPassword: string;
+  password: string;
+}
+
+export interface ResetPasswordRequest {
+  clientId: number;
+  username: string;
+  password: string;
+}
+
+export interface PaginationResponse {
+  message: string;
+  count: number;
+  currentPage: number;
+  nextPage: number;
+  prevPage: number;
+  lastPage: number;
+  data: { [key: string]: any }[];
+}
+
+export interface Country {
+  id: number;
+  name: string;
+  countryCodeLong: string;
+  countryCode: string;
+  dialCode: string;
+  currencyName: string;
+  currencySymbol: string;
+}
+
+export interface GetStatesRequest {
+  countryId: number;
+}
+
+export interface SessionRequest {
+  clientId: number;
+  sessionId: string;
+}
+
+export interface State {
+  id: number;
+  name: string;
+}
+
+export interface GetCountryResponse {
+  countries: Country[];
+}
+
+export interface StateResponse {
+  states: State[];
+}
+
+export interface XpressLoginRequest {
+  clientId: number;
+  token: string;
+}
+
+export interface XpressLoginResponse {
+  status: boolean;
+  code: number;
+  message: string;
+  data?: XpressLoginResponse_XpressData | undefined;
+}
+
+export interface XpressLoginResponse_XpressData {
+  playerId: string;
+  playerNickname: string;
+  balance: number;
+  sessionId: string;
+  group: string;
+  currency: string;
+  country?: string | undefined;
+}
+
+export interface EmptyRequest {
+}
+
+export interface MetaData {
+  page: number;
+  perPage: number;
+  total: number;
+  lastPage: number;
+  nextPage: number;
+  prevPage: number;
+}
+
+/** User Import Messages */
+export interface ImportUserData {
+  clientId: number;
+  username: string;
+  phoneNumber: string;
+  firstName?: string | undefined;
+  lastName?: string | undefined;
+  email?: string | undefined;
+  createdAt?: string | undefined;
+  balance?: number | undefined;
+}
+
+export interface ImportUsersRequest {
+  users: ImportUserData[];
+}
+
+export interface ImportUsersResponse {
+  success: boolean;
+  message: string;
+  totalProcessed: number;
+  totalCreated: number;
+  totalSkipped: number;
+  errors: string[];
+}
+
+/** Delete Client Data Messages */
+export interface DeleteClientDataRequest {
+  clientId: number;
+  /** Optional security confirmation */
+  confirmationCode?: string | undefined;
+}
+
+export interface DeleteClientDataResponse {
+  success: boolean;
+  message: string;
+  usersDeleted: number;
+  walletsDeleted: number;
+  betsDeleted: number;
+  bonusesDeleted: number;
+  errors: string[];
+}
+
+export const IDENTITY_PACKAGE_NAME = "identity";
+
+wrappers[".google.protobuf.Struct"] = { fromObject: Struct.wrap, toObject: Struct.unwrap } as any;
+
+export interface IdentityServiceClient {
+  handleDailyTransactions(request: DailyTransactionsRequest): Observable<CommonResponseObj>;
+
+  handlePin(request: HandlePinRequest): Observable<CommonResponseObj>;
+
+  handleTransfer(request: HandleTransferRequest): Observable<CommonResponseObj>;
+
+  register(request: CreateUserRequest): Observable<RegisterResponse>;
+
+  registerAffiliate(request: CreateUserRequest): Observable<RegisterResponse>;
+
+  login(request: LoginRequest): Observable<LoginResponse>;
+
+  xpressGameLogin(request: XpressLoginRequest): Observable<XpressLoginResponse>;
+
+  validateAuthCode(request: XpressLoginRequest): Observable<CommonResponseObj>;
+
+  xpressGameLogout(request: SessionRequest): Observable<XpressLoginResponse>;
+
+  validate(request: ValidateRequest): Observable<ValidateResponse>;
+
+  validateGroupCode(request: GetClientRequest): Observable<ValidateGroupCodeResponse>;
+
+  validateClient(request: ValidateRequest): Observable<ValidateClientResponse>;
+
+  listTestAccount(request: ListTestAccountsRequest): Observable<CommonResponseObj>;
+
+  toggleAccount(request: ValidateTestRequest): Observable<ValidateTestResponse>;
+
+  getUserDetails(request: GetUserDetailsRequest): Observable<GetUserDetailsResponse>;
+
+  getUserLogs(request: GetUserDetailsRequest): Observable<GetUserLogResponse>;
+
+  createClient(request: ClientRequest): Observable<CommonResponseObj>;
+
+  createPermission(request: PermissionRequest): Observable<CommonResponseObj>;
+
+  assignRolePermission(request: AssignRolePermissionRequest): Observable<CommonResponseObj>;
+
+  getAuthPermission(request: SingleItemRequest): Observable<CommonResponseObj>;
+
+  findUser(request: FindUserRequest): Observable<CommonResponseObj>;
+
+  saveRole(request: RoleRequest): Observable<SaveRoleResponse>;
+
+  getRoles(request: EmptyRequest): Observable<CommonResponseArray>;
+
+  getAgencyRoles(request: EmptyRequest): Observable<GetRolesResponse>;
+
+  removeRole(request: RemoveRoleRequest): Observable<CommonResponseObj>;
+
+  findAllPermissions(request: EmptyRequest): Observable<CommonResponseArray>;
+
+  findAllClients(request: EmptyRequest): Observable<CommonResponseArray>;
+
+  removeClient(request: RemoveClientRequest): Observable<CommonResponseObj>;
+
+  removePermission(request: RemovePermissionRequest): Observable<CommonResponseObj>;
+
+  updateDetails(request: UpdateUserRequest): Observable<CommonResponseObj>;
+
+  createRetailUser(request: CreateUserRequest): Observable<CommonResponseObj>;
+
+  updateRetailUser(request: UpdateUserRequest): Observable<CommonResponseObj>;
+
+  createAdminUser(request: CreateUserRequest): Observable<CommonResponseObj>;
+
+  getAdminUsers(request: ClientIdRequest): Observable<CommonResponseArray>;
+
+  deleteUser(request: SingleItemRequest): Observable<CommonResponseObj>;
+
+  changeUserTypeStatus(request: ChangeUserTypeStatusRequest): Observable<CommonResponseObj>;
+
+  getClient(request: GetClientRequest): Observable<GetClientResponse>;
+
+  getPaymentData(request: GetPaymentDataRequest): Observable<GetPaymentDataResponse>;
+
+  searchPlayers(request: SearchPlayerRequest): Observable<SearchPlayerResponse>;
+
+  updateUserDetails(request: UpdateUserRequest): Observable<CommonResponseObj>;
+
+  getUserByUsername(request: GetUserByUsernameRequest): Observable<GetUserByUsernameResponse>;
+
+  onlinePlayersReport(request: OnlinePlayersRequest): Observable<PlayersListResponse>;
+
+  registrationReport(request: RegistrationReportRequest): Observable<PlayersListResponse>;
+
+  fetchPlayerFilters(request: FetchPlayerFilterRequest): Observable<PaginationResponse>;
+
+  getPlayerData(request: GetPlayerDataRequest): Observable<GetPlayerDataResponse>;
+
+  updatePlayerData(request: UpdatePlayerDataRequest): Observable<CommonResponseObj>;
+
+  updatePlayerStatus(request: FindUserRequest): Observable<CommonResponseObj>;
+
+  changePassword(request: ChangePasswordRequest): Observable<CommonResponseObj>;
+
+  resetPassword(request: ResetPasswordRequest): Observable<CommonResponseObj>;
+
+  savePlayerSegment(request: SaveSegmentRequest): Observable<CommonResponseObj>;
+
+  fetchPlayerSegment(request: FetchPlayerSegmentRequest): Observable<CommonResponseArray>;
+
+  addToSegment(request: AddToSegmentRequest): Observable<CommonResponseObj>;
+
+  uploadToSegment(request: UploadPlayersToSegment): Observable<CommonResponseObj>;
+
+  deletePlayerSegment(request: DeleteItemRequest): Observable<CommonResponseObj>;
+
+  removePlayerFromSegment(request: DeleteItemRequest): Observable<CommonResponseObj>;
+
+  getSegmentPlayers(request: GetSegmentPlayerRequest): Observable<CommonResponseArray>;
+
+  grantBonusToSegment(request: GrantBonusRequest): Observable<CommonResponseObj>;
+
+  getCountries(request: EmptyRequest): Observable<GetCountryResponse>;
+
+  getStatesByCountry(request: GetStatesRequest): Observable<StateResponse>;
+
+  validateXpressSession(request: SessionRequest): Observable<CommonResponseObj>;
+
+  saveSettings(request: SettingsRequest): Observable<CommonResponseObj>;
+
+  saveRiskSettings(request: SettingsRequest): Observable<CommonResponseObj>;
+
+  saveUserRiskSettings(request: UserRiskSettingsRequest): Observable<CommonResponseObj>;
+
+  getSettings(request: GetSettingsRequest): Observable<CommonResponseArray>;
+
+  getGlobalVariables(request: GetSettingsRequest): Observable<CommonResponseObj>;
+
+  validateBet(request: PlaceBetRequest): Observable<CommonResponseObj>;
+
+  getWithdrawalSettings(request: GetWithdrawalSettingsRequest): Observable<WithdrawalSettingsResponse>;
+
+  getUserIdandName(request: GetUserIdNameRequest): Observable<GetUserIdNameResponse>;
+
+  getUserRiskSettings(request: GetRiskSettingRequest): Observable<CommonResponseObj>;
+
+  fetchPlayerLosersByBetCount(request: FetchPlayerFilterRequest): Observable<PaginationResponse>;
+
+  /** retail services */
+
+  createAgentUser(request: CreateAgentRequest): Observable<CommonResponseObj>;
+
+  getPendingAgent(request: GetAgentUsersRequest): Observable<CommonResponseObj>;
+
+  listAgentUsers(request: GetAgentUsersRequest): Observable<CommonResponseArray>;
+
+  listAgents(request: GetAgentUsersRequest): Observable<CommonResponseObj>;
+
+  approveAgentRegistration(request: ApprovalRequest): Observable<CommonResponseObj>;
+
+  getAgentUser(request: GetAgentUserRequest): Observable<CommonResponseArray>;
+
+  getCommissionProfiles(request: GetCommissionsRequest): Observable<CommonResponseArray>;
+
+  createCommissionProfile(request: CommissionProfile): Observable<CommonResponseObj>;
+
+  updateCommissionProfile(request: CommissionProfile): Observable<CommonResponseObj>;
+
+  assignUserCommissionProfile(request: AssignUserCommissionProfile): Observable<CommonResponseObj>;
+
+  getUserCommissionProfiles(request: SingleItemRequest): Observable<CommonResponseArray>;
+
+  removeUserCommissionProfile(request: AssignUserCommissionProfile): Observable<CommonResponseArray>;
+
+  getCommissionProfile(request: SingleItemRequest): Observable<CommonResponseObj>;
+
+  deleteCommissionProfile(request: SingleItemRequest): Observable<CommonResponseObj>;
+
+  getCommissionProfileUsers(request: GetCommissionsRequest): Observable<CommonResponseArray>;
+
+  calculateCommission(request: CalculateCommissionRequest): Observable<CommonResponseObj>;
+
+  payoutCommission(request: PayoutCommissionRequest): Observable<CommonResponseObj>;
+
+  getAgentTree(request: GetAgentUsersRequest): Observable<CommonResponseObj>;
+
+  getAgentPlayers(request: GetAgentUsersRequest): Observable<CommonResponseObj>;
+
+  getBonusGroups(request: SingleItemRequest): Observable<BonusGroupResponse>;
+
+  createBonusGroups(request: BonusGroups): Observable<BonusGroupResponse>;
+
+  createPowerBonus(request: PowerRequest): Observable<PowerBonusResponse>;
+
+  getPowerBonus(request: PowerRequest): Observable<PowerBonusResponse>;
+
+  payOutPowerBonus(request: PayPowerRequest): Observable<PowerResponse>;
+
+  getNormalBonus(request: GetNormalRequest): Observable<NormalResponse>;
+
+  calculateNormalBonus(request: PayNormalRequest): Observable<PayNormalResponse>;
+
+  payOutNormalBonus(request: PayNormalRequest): Observable<PayNormalResponse>;
+
+  getNetworkSalesReport(request: GetNetworkSalesRequest): Observable<CommonResponseObj>;
+
+  getTrackierKeys(request: SingleItemRequest): Observable<CommonResponseObj>;
+
+  getAllLogs(request: GetAllLogsRequest): Observable<GetAllLogsResponse>;
+
+  createLog(request: CreateLogRequest): Observable<CreateLogResponse>;
+
+  clintUsers(request: ClientIdRequest): Observable<CommonResponseArray>;
+
+  getPlayerStatistics(request: ClientIdRequest): Observable<CommonResponseObj>;
+
+  findOneBanner(request: FindOneRequest): Observable<CommonResponseObj>;
+
+  findAllBanners(request: ClientIdRequest): Observable<CommonResponseObj>;
+
+  userFetchBanner(request: ClientIdRequest): Observable<CommonResponseObj>;
+
+  updateBanner(request: CreateBannerRequest): Observable<CommonResponseObj>;
+
+  deleteBanner(request: FindOneRequest): Observable<CommonResponseObj>;
+
+  createBanner(request: CreateBannerRequest): Observable<CommonResponseObj>;
+
+  findOnePage(request: FindOneRequest): Observable<CommonResponseObj>;
+
+  findAllPages(request: ClientIdRequest): Observable<CommonResponseObj>;
+
+  userFetchPage(request: ClientIdRequest): Observable<CommonResponseObj>;
+
+  updatePage(request: CreatePageRequest): Observable<CommonResponseObj>;
+
+  deletePage(request: FindOneRequest): Observable<CommonResponseObj>;
+
+  createPage(request: CreatePageRequest): Observable<CommonResponseObj>;
+
+  findOneMenu(request: FindOneRequest): Observable<CommonResponseObj>;
+
+  findAllMenu(request: ClientIdRequest): Observable<CommonResponseObj>;
+
+  userFetchMenu(request: ClientIdRequest): Observable<CommonResponseObj>;
+
+  updateMenu(request: CreateMenuRequest): Observable<CommonResponseObj>;
+
+  deleteMenu(request: FindOneRequest): Observable<CommonResponseObj>;
+
+  createMenu(request: CreateMenuRequest): Observable<CommonResponseObj>;
+
+  /** Kyc */
+
+  createKyc(request: KycRequest): Observable<CommonResponseObj>;
+
+  checkKyc(request: FindOneRequest): Observable<CommonResponseObj>;
+
+  listAllKyc(request: ClientIdRequest): Observable<CommonResponseArray>;
+
+  listBanks(request: ListBanksRequest): Observable<CommonResponseArray>;
+
+  fetchAgents(request: ClientIdRequest): Observable<CommonResponseObj>;
+
+  listAllClientAgents(request: ClientIdRequest): Observable<CommonResponseArray>;
+
+  fetchUsersId(request: FindUserIdRequest): Observable<CommonResponseObj>;
+
+  fetchUserReferralId(request: FindUserIdRequest): Observable<CommonResponseArray>;
+
+  addAndRemoveUser(request: AddAndRemoveUserRequest): Observable<CommonResponseObj>;
+
+  getAffiliateIds(request: EmptyRequest): Observable<CommonResponseArray>;
+
+  getAffiliateUsers(request: AffiliateRequest): Observable<AffiliateResponse>;
+
+  getAffiliateData(request: AffiliateRequest): Observable<CommonResponseObj>;
+
+  getSuperAgents(request: ClientIdRequest): Observable<CommonResponseObj>;
+
+  getReferralUserIdsForCommission(request: FindUserIdRequest): Observable<CommonResponseArray>;
+
+  listSuperAgentsUsers(request: GetAgentUsersRequest): Observable<ArrayResponse>;
+
+  getClientAffiliates(request: ClientIdRequest): Observable<CommonResponseArray>;
+
+  getAffiliatesOverview(request: AffiliateRequest): Observable<CommonResponseObj>;
+
+  /** User Import */
+
+  importUsers(request: ImportUsersRequest): Observable<ImportUsersResponse>;
+
+  /** Delete Client Data */
+
+  deleteClientData(request: DeleteClientDataRequest): Observable<DeleteClientDataResponse>;
+}
+
+export interface IdentityServiceController {
+  handleDailyTransactions(
+    request: DailyTransactionsRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  handlePin(request: HandlePinRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  handleTransfer(
+    request: HandleTransferRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  register(request: CreateUserRequest): Promise<RegisterResponse> | Observable<RegisterResponse> | RegisterResponse;
+
+  registerAffiliate(
+    request: CreateUserRequest,
+  ): Promise<RegisterResponse> | Observable<RegisterResponse> | RegisterResponse;
+
+  login(request: LoginRequest): Promise<LoginResponse> | Observable<LoginResponse> | LoginResponse;
+
+  xpressGameLogin(
+    request: XpressLoginRequest,
+  ): Promise<XpressLoginResponse> | Observable<XpressLoginResponse> | XpressLoginResponse;
+
+  validateAuthCode(
+    request: XpressLoginRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  xpressGameLogout(
+    request: SessionRequest,
+  ): Promise<XpressLoginResponse> | Observable<XpressLoginResponse> | XpressLoginResponse;
+
+  validate(request: ValidateRequest): Promise<ValidateResponse> | Observable<ValidateResponse> | ValidateResponse;
+
+  validateGroupCode(
+    request: GetClientRequest,
+  ): Promise<ValidateGroupCodeResponse> | Observable<ValidateGroupCodeResponse> | ValidateGroupCodeResponse;
+
+  validateClient(
+    request: ValidateRequest,
+  ): Promise<ValidateClientResponse> | Observable<ValidateClientResponse> | ValidateClientResponse;
+
+  listTestAccount(
+    request: ListTestAccountsRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  toggleAccount(
+    request: ValidateTestRequest,
+  ): Promise<ValidateTestResponse> | Observable<ValidateTestResponse> | ValidateTestResponse;
+
+  getUserDetails(
+    request: GetUserDetailsRequest,
+  ): Promise<GetUserDetailsResponse> | Observable<GetUserDetailsResponse> | GetUserDetailsResponse;
+
+  getUserLogs(
+    request: GetUserDetailsRequest,
+  ): Promise<GetUserLogResponse> | Observable<GetUserLogResponse> | GetUserLogResponse;
+
+  createClient(request: ClientRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  createPermission(
+    request: PermissionRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  assignRolePermission(
+    request: AssignRolePermissionRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getAuthPermission(
+    request: SingleItemRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  findUser(request: FindUserRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  saveRole(request: RoleRequest): Promise<SaveRoleResponse> | Observable<SaveRoleResponse> | SaveRoleResponse;
+
+  getRoles(request: EmptyRequest): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  getAgencyRoles(request: EmptyRequest): Promise<GetRolesResponse> | Observable<GetRolesResponse> | GetRolesResponse;
+
+  removeRole(
+    request: RemoveRoleRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  findAllPermissions(
+    request: EmptyRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  findAllClients(
+    request: EmptyRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  removeClient(
+    request: RemoveClientRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  removePermission(
+    request: RemovePermissionRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  updateDetails(
+    request: UpdateUserRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  createRetailUser(
+    request: CreateUserRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  updateRetailUser(
+    request: UpdateUserRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  createAdminUser(
+    request: CreateUserRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getAdminUsers(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  deleteUser(
+    request: SingleItemRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  changeUserTypeStatus(
+    request: ChangeUserTypeStatusRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getClient(request: GetClientRequest): Promise<GetClientResponse> | Observable<GetClientResponse> | GetClientResponse;
+
+  getPaymentData(
+    request: GetPaymentDataRequest,
+  ): Promise<GetPaymentDataResponse> | Observable<GetPaymentDataResponse> | GetPaymentDataResponse;
+
+  searchPlayers(
+    request: SearchPlayerRequest,
+  ): Promise<SearchPlayerResponse> | Observable<SearchPlayerResponse> | SearchPlayerResponse;
+
+  updateUserDetails(
+    request: UpdateUserRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getUserByUsername(
+    request: GetUserByUsernameRequest,
+  ): Promise<GetUserByUsernameResponse> | Observable<GetUserByUsernameResponse> | GetUserByUsernameResponse;
+
+  onlinePlayersReport(
+    request: OnlinePlayersRequest,
+  ): Promise<PlayersListResponse> | Observable<PlayersListResponse> | PlayersListResponse;
+
+  registrationReport(
+    request: RegistrationReportRequest,
+  ): Promise<PlayersListResponse> | Observable<PlayersListResponse> | PlayersListResponse;
+
+  fetchPlayerFilters(
+    request: FetchPlayerFilterRequest,
+  ): Promise<PaginationResponse> | Observable<PaginationResponse> | PaginationResponse;
+
+  getPlayerData(
+    request: GetPlayerDataRequest,
+  ): Promise<GetPlayerDataResponse> | Observable<GetPlayerDataResponse> | GetPlayerDataResponse;
+
+  updatePlayerData(
+    request: UpdatePlayerDataRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  updatePlayerStatus(
+    request: FindUserRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  changePassword(
+    request: ChangePasswordRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  resetPassword(
+    request: ResetPasswordRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  savePlayerSegment(
+    request: SaveSegmentRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  fetchPlayerSegment(
+    request: FetchPlayerSegmentRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  addToSegment(
+    request: AddToSegmentRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  uploadToSegment(
+    request: UploadPlayersToSegment,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  deletePlayerSegment(
+    request: DeleteItemRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  removePlayerFromSegment(
+    request: DeleteItemRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getSegmentPlayers(
+    request: GetSegmentPlayerRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  grantBonusToSegment(
+    request: GrantBonusRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getCountries(
+    request: EmptyRequest,
+  ): Promise<GetCountryResponse> | Observable<GetCountryResponse> | GetCountryResponse;
+
+  getStatesByCountry(request: GetStatesRequest): Promise<StateResponse> | Observable<StateResponse> | StateResponse;
+
+  validateXpressSession(
+    request: SessionRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  saveSettings(
+    request: SettingsRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  saveRiskSettings(
+    request: SettingsRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  saveUserRiskSettings(
+    request: UserRiskSettingsRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getSettings(
+    request: GetSettingsRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  getGlobalVariables(
+    request: GetSettingsRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  validateBet(request: PlaceBetRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getWithdrawalSettings(
+    request: GetWithdrawalSettingsRequest,
+  ): Promise<WithdrawalSettingsResponse> | Observable<WithdrawalSettingsResponse> | WithdrawalSettingsResponse;
+
+  getUserIdandName(
+    request: GetUserIdNameRequest,
+  ): Promise<GetUserIdNameResponse> | Observable<GetUserIdNameResponse> | GetUserIdNameResponse;
+
+  getUserRiskSettings(
+    request: GetRiskSettingRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  fetchPlayerLosersByBetCount(
+    request: FetchPlayerFilterRequest,
+  ): Promise<PaginationResponse> | Observable<PaginationResponse> | PaginationResponse;
+
+  /** retail services */
+
+  createAgentUser(
+    request: CreateAgentRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getPendingAgent(
+    request: GetAgentUsersRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  listAgentUsers(
+    request: GetAgentUsersRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  listAgents(
+    request: GetAgentUsersRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  approveAgentRegistration(
+    request: ApprovalRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getAgentUser(
+    request: GetAgentUserRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  getCommissionProfiles(
+    request: GetCommissionsRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  createCommissionProfile(
+    request: CommissionProfile,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  updateCommissionProfile(
+    request: CommissionProfile,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  assignUserCommissionProfile(
+    request: AssignUserCommissionProfile,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getUserCommissionProfiles(
+    request: SingleItemRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  removeUserCommissionProfile(
+    request: AssignUserCommissionProfile,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  getCommissionProfile(
+    request: SingleItemRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  deleteCommissionProfile(
+    request: SingleItemRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getCommissionProfileUsers(
+    request: GetCommissionsRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  calculateCommission(
+    request: CalculateCommissionRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  payoutCommission(
+    request: PayoutCommissionRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getAgentTree(
+    request: GetAgentUsersRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getAgentPlayers(
+    request: GetAgentUsersRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getBonusGroups(
+    request: SingleItemRequest,
+  ): Promise<BonusGroupResponse> | Observable<BonusGroupResponse> | BonusGroupResponse;
+
+  createBonusGroups(
+    request: BonusGroups,
+  ): Promise<BonusGroupResponse> | Observable<BonusGroupResponse> | BonusGroupResponse;
+
+  createPowerBonus(
+    request: PowerRequest,
+  ): Promise<PowerBonusResponse> | Observable<PowerBonusResponse> | PowerBonusResponse;
+
+  getPowerBonus(
+    request: PowerRequest,
+  ): Promise<PowerBonusResponse> | Observable<PowerBonusResponse> | PowerBonusResponse;
+
+  payOutPowerBonus(request: PayPowerRequest): Promise<PowerResponse> | Observable<PowerResponse> | PowerResponse;
+
+  getNormalBonus(request: GetNormalRequest): Promise<NormalResponse> | Observable<NormalResponse> | NormalResponse;
+
+  calculateNormalBonus(
+    request: PayNormalRequest,
+  ): Promise<PayNormalResponse> | Observable<PayNormalResponse> | PayNormalResponse;
+
+  payOutNormalBonus(
+    request: PayNormalRequest,
+  ): Promise<PayNormalResponse> | Observable<PayNormalResponse> | PayNormalResponse;
+
+  getNetworkSalesReport(
+    request: GetNetworkSalesRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getTrackierKeys(
+    request: SingleItemRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getAllLogs(
+    request: GetAllLogsRequest,
+  ): Promise<GetAllLogsResponse> | Observable<GetAllLogsResponse> | GetAllLogsResponse;
+
+  createLog(request: CreateLogRequest): Promise<CreateLogResponse> | Observable<CreateLogResponse> | CreateLogResponse;
+
+  clintUsers(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  getPlayerStatistics(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  findOneBanner(
+    request: FindOneRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  findAllBanners(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  userFetchBanner(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  updateBanner(
+    request: CreateBannerRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  deleteBanner(request: FindOneRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  createBanner(
+    request: CreateBannerRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  findOnePage(request: FindOneRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  findAllPages(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  userFetchPage(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  updatePage(
+    request: CreatePageRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  deletePage(request: FindOneRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  createPage(
+    request: CreatePageRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  findOneMenu(request: FindOneRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  findAllMenu(request: ClientIdRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  userFetchMenu(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  updateMenu(
+    request: CreateMenuRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  deleteMenu(request: FindOneRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  createMenu(
+    request: CreateMenuRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  /** Kyc */
+
+  createKyc(request: KycRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  checkKyc(request: FindOneRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  listAllKyc(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  listBanks(
+    request: ListBanksRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  fetchAgents(request: ClientIdRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  listAllClientAgents(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  fetchUsersId(
+    request: FindUserIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  fetchUserReferralId(
+    request: FindUserIdRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  addAndRemoveUser(
+    request: AddAndRemoveUserRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getAffiliateIds(
+    request: EmptyRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  getAffiliateUsers(
+    request: AffiliateRequest,
+  ): Promise<AffiliateResponse> | Observable<AffiliateResponse> | AffiliateResponse;
+
+  getAffiliateData(
+    request: AffiliateRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getSuperAgents(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getReferralUserIdsForCommission(
+    request: FindUserIdRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  listSuperAgentsUsers(
+    request: GetAgentUsersRequest,
+  ): Promise<ArrayResponse> | Observable<ArrayResponse> | ArrayResponse;
+
+  getClientAffiliates(
+    request: ClientIdRequest,
+  ): Promise<CommonResponseArray> | Observable<CommonResponseArray> | CommonResponseArray;
+
+  getAffiliatesOverview(
+    request: AffiliateRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  /** User Import */
+
+  importUsers(
+    request: ImportUsersRequest,
+  ): Promise<ImportUsersResponse> | Observable<ImportUsersResponse> | ImportUsersResponse;
+
+  /** Delete Client Data */
+
+  deleteClientData(
+    request: DeleteClientDataRequest,
+  ): Promise<DeleteClientDataResponse> | Observable<DeleteClientDataResponse> | DeleteClientDataResponse;
+}
+
+export function IdentityServiceControllerMethods() {
+  return function (constructor: Function) {
+    const grpcMethods: string[] = [
+      "handleDailyTransactions",
+      "handlePin",
+      "handleTransfer",
+      "register",
+      "registerAffiliate",
+      "login",
+      "xpressGameLogin",
+      "validateAuthCode",
+      "xpressGameLogout",
+      "validate",
+      "validateGroupCode",
+      "validateClient",
+      "listTestAccount",
+      "toggleAccount",
+      "getUserDetails",
+      "getUserLogs",
+      "createClient",
+      "createPermission",
+      "assignRolePermission",
+      "getAuthPermission",
+      "findUser",
+      "saveRole",
+      "getRoles",
+      "getAgencyRoles",
+      "removeRole",
+      "findAllPermissions",
+      "findAllClients",
+      "removeClient",
+      "removePermission",
+      "updateDetails",
+      "createRetailUser",
+      "updateRetailUser",
+      "createAdminUser",
+      "getAdminUsers",
+      "deleteUser",
+      "changeUserTypeStatus",
+      "getClient",
+      "getPaymentData",
+      "searchPlayers",
+      "updateUserDetails",
+      "getUserByUsername",
+      "onlinePlayersReport",
+      "registrationReport",
+      "fetchPlayerFilters",
+      "getPlayerData",
+      "updatePlayerData",
+      "updatePlayerStatus",
+      "changePassword",
+      "resetPassword",
+      "savePlayerSegment",
+      "fetchPlayerSegment",
+      "addToSegment",
+      "uploadToSegment",
+      "deletePlayerSegment",
+      "removePlayerFromSegment",
+      "getSegmentPlayers",
+      "grantBonusToSegment",
+      "getCountries",
+      "getStatesByCountry",
+      "validateXpressSession",
+      "saveSettings",
+      "saveRiskSettings",
+      "saveUserRiskSettings",
+      "getSettings",
+      "getGlobalVariables",
+      "validateBet",
+      "getWithdrawalSettings",
+      "getUserIdandName",
+      "getUserRiskSettings",
+      "fetchPlayerLosersByBetCount",
+      "createAgentUser",
+      "getPendingAgent",
+      "listAgentUsers",
+      "listAgents",
+      "approveAgentRegistration",
+      "getAgentUser",
+      "getCommissionProfiles",
+      "createCommissionProfile",
+      "updateCommissionProfile",
+      "assignUserCommissionProfile",
+      "getUserCommissionProfiles",
+      "removeUserCommissionProfile",
+      "getCommissionProfile",
+      "deleteCommissionProfile",
+      "getCommissionProfileUsers",
+      "calculateCommission",
+      "payoutCommission",
+      "getAgentTree",
+      "getAgentPlayers",
+      "getBonusGroups",
+      "createBonusGroups",
+      "createPowerBonus",
+      "getPowerBonus",
+      "payOutPowerBonus",
+      "getNormalBonus",
+      "calculateNormalBonus",
+      "payOutNormalBonus",
+      "getNetworkSalesReport",
+      "getTrackierKeys",
+      "getAllLogs",
+      "createLog",
+      "clintUsers",
+      "getPlayerStatistics",
+      "findOneBanner",
+      "findAllBanners",
+      "userFetchBanner",
+      "updateBanner",
+      "deleteBanner",
+      "createBanner",
+      "findOnePage",
+      "findAllPages",
+      "userFetchPage",
+      "updatePage",
+      "deletePage",
+      "createPage",
+      "findOneMenu",
+      "findAllMenu",
+      "userFetchMenu",
+      "updateMenu",
+      "deleteMenu",
+      "createMenu",
+      "createKyc",
+      "checkKyc",
+      "listAllKyc",
+      "listBanks",
+      "fetchAgents",
+      "listAllClientAgents",
+      "fetchUsersId",
+      "fetchUserReferralId",
+      "addAndRemoveUser",
+      "getAffiliateIds",
+      "getAffiliateUsers",
+      "getAffiliateData",
+      "getSuperAgents",
+      "getReferralUserIdsForCommission",
+      "listSuperAgentsUsers",
+      "getClientAffiliates",
+      "getAffiliatesOverview",
+      "importUsers",
+      "deleteClientData",
+    ];
+    for (const method of grpcMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcMethod("IdentityService", method)(constructor.prototype[method], method, descriptor);
+    }
+    const grpcStreamMethods: string[] = [];
+    for (const method of grpcStreamMethods) {
+      const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
+      GrpcStreamMethod("IdentityService", method)(constructor.prototype[method], method, descriptor);
+    }
+  };
+}
+
+export const IDENTITY_SERVICE_NAME = "IdentityService";

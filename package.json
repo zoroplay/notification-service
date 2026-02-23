@@ -19,6 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "proto:install": "npm i git+https://github.com/zoroplay/sbe-service-proto.git",
+    "proto:identity": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto.cmd -I=./node_modules/sbe-service-proto/proto --ts_proto_out=src/proto/ node_modules/sbe-service-proto/proto/identity.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
     "proto:noti": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto.cmd -I=./node_modules/sbe-service-proto/proto --ts_proto_out=src/proto/ node_modules/sbe-service-proto/proto/noti.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
     "migrate:generate": "npx prisma migrate dev --create-only",
     "db:push": "npx prisma db push"
@@ -55,7 +56,8 @@
     "rxjs": "^7.8.1",
     "sbe-service-proto": "github:zoroplay/sbe-service-proto",
     "semantic-release": "^24.2.9",
-    "smpp": "^0.6.0-rc.4"
+    "smpp": "^0.6.0-rc.4",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

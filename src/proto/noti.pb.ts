@@ -168,6 +168,122 @@ export interface DeliveryReportResponse {
   messageId: string;
 }
 
+/** Shared: any operation that only needs a chat + client scope */
+export interface ChatIdRequest {
+  chatId: string;
+  clientId: number;
+}
+
+/** GetChats */
+export interface GetChatsRequest {
+  userId: number;
+  clientId: number;
+}
+
+/** IsParticipant / LeaveChat / MarkMessagesAsRead */
+export interface ChatParticipantRequest {
+  chatId: string;
+  userId: number;
+  clientId: number;
+}
+
+/** IsParticipant response (distinct because it carries a boolean) */
+export interface IsParticipantResponse {
+  status: number;
+  isParticipant: boolean;
+  message: string;
+}
+
+/** SendChatMessage */
+export interface SendChatMessageRequest {
+  chatId: string;
+  senderId: number;
+  content: string;
+  clientId: number;
+}
+
+/** CreateAndSendMessage */
+export interface CreateAndSendMessageRequest {
+  senderId: number;
+  content: string;
+  participantId: number;
+  clientId: number;
+}
+
+/** CreateDirectChat */
+export interface CreateDirectChatRequest {
+  creatorId: number;
+  participantId: number;
+  clientId: number;
+}
+
+/** UpdateMessageStatus (bulk status transition by recipient) */
+export interface UpdateMessageStatusRequest {
+  recipientId: number;
+  fromStatus: string;
+  toStatus: string;
+  clientId: number;
+}
+
+/** UpdateStatus (single message) */
+export interface UpdateStatusRequest {
+  messageId: string;
+  toStatus: string;
+}
+
+/** CreateChat (group) */
+export interface CreateChatRequest {
+  creatorId: number;
+  participantIds: number[];
+  clientId: number;
+}
+
+/** GetLastMessagesForChats */
+export interface GetLastMessagesRequest {
+  chatIds: string[];
+  clientId: number;
+}
+
+/** SavePushSubscription */
+export interface SavePushSubscriptionRequest {
+  userId: number;
+  clientId: number;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  /** WEB | ANDROID | IOS  (default: WEB) */
+  platform: string;
+}
+
+/** SendNotificationToUser */
+export interface PushNotificationPayload {
+  title: string;
+  body: string;
+  icon: string;
+  badge: string;
+  tag: string;
+  data: { [key: string]: string };
+}
+
+export interface PushNotificationPayload_DataEntry {
+  key: string;
+  value: string;
+}
+
+export interface SendNotificationToUserRequest {
+  userId: number;
+  clientId: number;
+  notification: PushNotificationPayload | undefined;
+}
+
+export interface SendNotificationToUserResponse {
+  success: boolean;
+  message: string;
+  successful: number;
+  failed: number;
+  notificationId?: number | undefined;
+}
+
 export const NOTIFICATION_PACKAGE_NAME = "notification";
 
 wrappers[".google.protobuf.Struct"] = { fromObject: Struct.wrap, toObject: Struct.unwrap } as any;
@@ -208,6 +324,46 @@ export interface NotificationServiceClient {
   updateUserMessage(request: FindOneMessage): Observable<CommonResponseObj>;
 
   deleteUserMessage(request: FindOneMessage): Observable<CommonResponseObj>;
+
+  /** Chat RPCs */
+
+  getChatHistory(request: ChatIdRequest): Observable<CommonResponseObj>;
+
+  getMessages(request: ChatIdRequest): Observable<CommonResponseObj>;
+
+  getChats(request: GetChatsRequest): Observable<CommonResponseObj>;
+
+  isParticipant(request: ChatParticipantRequest): Observable<IsParticipantResponse>;
+
+  leaveChat(request: ChatParticipantRequest): Observable<CommonResponseObj>;
+
+  sendChatMessage(request: SendChatMessageRequest): Observable<CommonResponseObj>;
+
+  createAndSendMessage(request: CreateAndSendMessageRequest): Observable<CommonResponseObj>;
+
+  markMessagesAsRead(request: ChatParticipantRequest): Observable<CommonResponseObj>;
+
+  createDirectChat(request: CreateDirectChatRequest): Observable<CommonResponseObj>;
+
+  getParticipants(request: ChatIdRequest): Observable<CommonResponseObj>;
+
+  updateMessageStatus(request: UpdateMessageStatusRequest): Observable<CommonResponseObj>;
+
+  updateStatus(request: UpdateStatusRequest): Observable<CommonResponseObj>;
+
+  createChat(request: CreateChatRequest): Observable<CommonResponseObj>;
+
+  getChatMessages(request: ChatIdRequest): Observable<CommonResponseObj>;
+
+  getLastMessage(request: ChatIdRequest): Observable<CommonResponseObj>;
+
+  getLastMessagesForChats(request: GetLastMessagesRequest): Observable<CommonResponseObj>;
+
+  /** Push notification RPCs */
+
+  savePushSubscription(request: SavePushSubscriptionRequest): Observable<CommonResponseObj>;
+
+  sendNotificationToUser(request: SendNotificationToUserRequest): Observable<SendNotificationToUserResponse>;
 }
 
 export interface NotificationServiceController {
@@ -276,6 +432,81 @@ export interface NotificationServiceController {
   deleteUserMessage(
     request: FindOneMessage,
   ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  /** Chat RPCs */
+
+  getChatHistory(
+    request: ChatIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getMessages(request: ChatIdRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getChats(request: GetChatsRequest): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  isParticipant(
+    request: ChatParticipantRequest,
+  ): Promise<IsParticipantResponse> | Observable<IsParticipantResponse> | IsParticipantResponse;
+
+  leaveChat(
+    request: ChatParticipantRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  sendChatMessage(
+    request: SendChatMessageRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  createAndSendMessage(
+    request: CreateAndSendMessageRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  markMessagesAsRead(
+    request: ChatParticipantRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  createDirectChat(
+    request: CreateDirectChatRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getParticipants(
+    request: ChatIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  updateMessageStatus(
+    request: UpdateMessageStatusRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  updateStatus(
+    request: UpdateStatusRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  createChat(
+    request: CreateChatRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getChatMessages(
+    request: ChatIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getLastMessage(
+    request: ChatIdRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  getLastMessagesForChats(
+    request: GetLastMessagesRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  /** Push notification RPCs */
+
+  savePushSubscription(
+    request: SavePushSubscriptionRequest,
+  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+
+  sendNotificationToUser(
+    request: SendNotificationToUserRequest,
+  ):
+    | Promise<SendNotificationToUserResponse>
+    | Observable<SendNotificationToUserResponse>
+    | SendNotificationToUserResponse;
 }
 
 export function NotificationServiceControllerMethods() {
@@ -299,6 +530,24 @@ export function NotificationServiceControllerMethods() {
       "findUserMessages",
       "updateUserMessage",
       "deleteUserMessage",
+      "getChatHistory",
+      "getMessages",
+      "getChats",
+      "isParticipant",
+      "leaveChat",
+      "sendChatMessage",
+      "createAndSendMessage",
+      "markMessagesAsRead",
+      "createDirectChat",
+      "getParticipants",
+      "updateMessageStatus",
+      "updateStatus",
+      "createChat",
+      "getChatMessages",
+      "getLastMessage",
+      "getLastMessagesForChats",
+      "savePushSubscription",
+      "sendNotificationToUser",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
