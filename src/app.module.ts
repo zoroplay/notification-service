@@ -8,6 +8,8 @@ import { AppService } from "./app.service";
 import { MessageModule } from "./message/message.module";
 import { PrismaService } from './prisma/prisma.service';
 import { SmsModule } from "./sms/sms.module";
+import { IdentityModule } from './identity/identity.module';
+import { NotificationModule } from './notification/notification.module';
 
 const configService = new ConfigService();
 // export const RedisOptions: CacheModuleAsyncOptions = {
@@ -38,7 +40,9 @@ const configService = new ConfigService();
       port: parseInt(configService.get<string>('REDIS_PORT')!),
     }),
     SmsModule,
-    MessageModule
+    MessageModule,
+    IdentityModule,
+    NotificationModule
   ],
   controllers: [AppController],
   providers: [
