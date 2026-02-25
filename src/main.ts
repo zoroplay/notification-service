@@ -17,7 +17,7 @@ async function bootstrap() {
     transport: Transport.GRPC,
     options: {
       url: uri,
-      protoPath: join('node_modules/sbe-service-proto/proto/noti.proto'),
+      protoPath: join(__dirname, '..', 'proto', 'noti.proto'),
       package: protobufPackage,
     },
   });

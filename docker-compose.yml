@@ -1,0 +1,23 @@
+services:
+  notification-service:
+    image: ghcr.io/zoroplay/notification-service:latest
+    container_name: notification-service
+    ports:
+      - "9013:5000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - sbenet
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+networks:
+  sbenet:
+    external: true
