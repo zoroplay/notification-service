@@ -56,6 +56,7 @@ model Messages {
   id          Int      @id @default(autoincrement())
   clientID    Int      @map("client_id")
   content     String   @db.Text
+  imageUrl    String?  @db.Text
   title       String
   status      Int      @default(1)
   createdAt   DateTime @default(now()) @map("created_at")

@@ -182,7 +182,8 @@ export class MessageService {
         data: {
           title: data.title,
           clientID: data.clientId,
-          content: data.content
+          content: data.content,
+          imageUrl: data.imageUrl,
         },
     
       });

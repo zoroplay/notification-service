@@ -15,6 +15,7 @@ export interface CreateMessageRequest {
   id?: number | undefined;
   createdAt?: string | undefined;
   updatedAt?: string | undefined;
+  imageUrl?: string | undefined;
 }
 
 export interface FindOneMessage {
