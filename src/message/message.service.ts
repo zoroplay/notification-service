@@ -67,7 +67,7 @@ export class MessageService {
       if (!message) {
         return {
             success: false,
-            message: `Could not find banner with messageId ${id}`,
+            message: `Could not find message with messageId ${id}`,
             status: HttpStatus.BAD_REQUEST,
             data: null,
         };
@@ -104,7 +104,7 @@ export class MessageService {
       if (!message) {
         return {
             success: false,
-            message: `Could not find banner with bannerId ${id}`,
+            message: `Could not find message with messageId ${id}`,
             status: HttpStatus.BAD_REQUEST,
             data: null,
         };
@@ -114,7 +114,7 @@ export class MessageService {
        return {
         status: HttpStatus.OK,
         success: true,
-        message: 'Banner deleted successfully',
+        message: 'Message deleted successfully',
         data: {}
       };
     } catch (err) {

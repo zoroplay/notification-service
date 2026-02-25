@@ -186,6 +186,10 @@ export class SmsService implements OnModuleInit {
           return this.sendMessageSmsense(data, smsProvider);
         case 'vasmobile':
           return this.sendMessageVasMobile(data, smsProvider);
+        case 'africastalking':
+          return this.sendMessageAfricaTalking(data, smsProvider);
+        case '9bits':
+          return this.sendMessage9bits(data, smsProvider);
         default:
           return { success: false, message: 'SMS gateway does not exist in switch' };
       }
@@ -636,6 +640,243 @@ export class SmsService implements OnModuleInit {
       return { status: false, message: `Failed to send OTP: ${error.message}` };
     }
   }
+
+  // async sendMessageAfricaTalking(
+  //   messageData: MessageData,
+  //   smsProvider: SettingData,
+  // ): Promise<any> {
+  //   try {
+  //     const payload = {
+  //           username: smsProvider.username,
+  //           phoneNumbers: [messageData.receiver],
+  //           senderId: smsProvider.senderID,
+  //           message: messageData.message,
+  //     };
+
+  //     console.log("payload", payload )
+
+  //     const response: { status: string; message: string; data: any } =
+  //       await axios.post('https://api.africastalking.com/version1/messaging/bulk', payload, {
+  //         headers: {
+  //           'apiKey': smsProvider.apiKey,
+  //           "Content-Type": 'application/json'
+  //         },
+  //       });
+
+  //       console.log("response", response);
+
+  //     if (response.data.status !== 101) {
+  //       messageData.status = false;
+  //       // save message as failed
+  //       this.saveMessage({
+  //         data: messageData,
+  //         provider: smsProvider,
+  //         response: response.data,
+  //       });
+  //       return { status: false, message: response.data.message };
+  //     } else {
+  //       messageData.status = true;
+  //       // save message as success
+  //       this.saveMessage({
+  //         data: messageData,
+  //         provider: smsProvider,
+  //         response: response.data,
+  //       });
+  //       return { status: true, message: response.data.message };
+  //     }
+  //   } catch (error) {
+  //     return { status: false, message: `Failed to send OTP: ${error.message}` };
+  //   }
+  // }
+
+  // async sendMessage9bits(
+  //   messageData: MessageData,
+  //   smsProvider: SettingData,
+  // ): Promise<any> {
+  //   try {
+  //     const payload = {
+  //           to: [messageData.receiver],
+  //           from: smsProvider.senderID,
+  //           content: messageData.message,
+  //     };
+
+  //     console.log("payload", payload )
+
+  //     const response: { status: string; message: string; data: any } =
+  //       await axios.post('https://api.9bits.net:2096/ng/v1/sendsms', payload, {
+  //         headers: {
+  //           'Authorization': `Bearer ${smsProvider.apiKey}` ,
+  //           "Content-Type": 'application/json'
+  //         },
+  //       });
+
+  //       console.log("response", response);
+
+  //     if (response.data.status !== 200) {
+  //       messageData.status = false;
+  //       // save message as failed
+  //       this.saveMessage({
+  //         data: messageData,
+  //         provider: smsProvider,
+  //         response: response.data,
+  //       });
+  //       return { status: false, message: response.data.message };
+  //     } else {
+  //       messageData.status = true;
+  //       // save message as success
+  //       this.saveMessage({
+  //         data: messageData,
+  //         provider: smsProvider,
+  //         response: response.data,
+  //       });
+  //       return { status: true, message: response.data.message };
+  //     }
+  //   } catch (error) {
+  //     return { status: false, message: `Failed to send OTP: ${error.message}` };
+  //   }
+  // }
+
+  async sendMessage9bits(
+  messageData: MessageData,
+  smsProvider: SettingData,
+): Promise<any> {
+  try {
+    const payload = {
+      to: [messageData.receiver],
+      from: smsProvider.senderID,
+      content: messageData.message,
+    };
+
+    console.log('9BITS PAYLOAD:', payload);
+
+    const response = await axios.post(
+      'https://app.9bits.net:2096/ng/v1/sendsms',
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${smsProvider.apiKey}`,
+          'Content-Type': 'application/json',
+        }
+      },
+    );
+
+    // Use HTTP status code, not response.data.status
+    if (response.status !== 200) {
+      messageData.status = false;
+
+      await this.saveMessage({
+        data: messageData,
+        provider: smsProvider,
+        response: response.data,
+      });
+
+      return {
+        status: false,
+        message: response.data?.message || 'Failed to send SMS',
+      };
+    }
+
+    messageData.status = true;
+
+    await this.saveMessage({
+      data: messageData,
+      provider: smsProvider,
+      response: response.data,
+    });
+
+    return {
+      status: true,
+      message: response.data?.message || 'SMS sent successfully',
+    };
+  } catch (error: any) {
+    // This catches network / runtime errors
+    console.error('9BITS AXIOS ERROR:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+
+    return {
+      status: false,
+      message: `Failed to send OTP: ${
+        error.response?.data?.message || error.message
+      }`,
+    };
+  }
+}
+
+ async sendMessageAfricaTalking(
+  messageData: MessageData,
+  smsProvider: SettingData,
+): Promise<any> {
+  try {
+    const payload = {
+            username: smsProvider.username,
+            phoneNumbers: [messageData.receiver],
+            senderId: smsProvider.senderID,
+            message: messageData.message,
+      };
+
+    console.log('AfricaTalking PAYLOAD:', payload);
+
+    const response = await axios.post(
+      'https://api.africastalking.com/version1/messaging/bulk',
+      payload,
+      {
+        headers: {
+          'apiKey': smsProvider.apiKey,
+          'Content-Type': 'application/json',
+        }
+      },
+    );
+
+    console.log("response", response);
+
+    // Use HTTP status code, not response.data.status
+    if (response.status !== 201) {
+      messageData.status = false;
+
+      await this.saveMessage({
+        data: messageData,
+        provider: smsProvider,
+        response: response.data,
+      });
+
+      return {
+        status: false,
+        message: response.data?.message || 'Failed to send SMS',
+      };
+    }
+
+    messageData.status = true;
+
+    await this.saveMessage({
+      data: messageData,
+      provider: smsProvider,
+      response: response.data,
+    });
+
+    return {
+      status: true,
+      message: response.data?.message || 'SMS sent successfully',
+    };
+  } catch (error: any) {
+    // This catches network / runtime errors
+    console.error('9BITS AXIOS ERROR:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+
+    return {
+      status: false,
+      message: `Failed to send OTP: ${
+        error.response?.data?.message || error.message
+      }`,
+    };
+  }
+}
+
 
   async sendMessageMetch(
     messageData: MessageData,

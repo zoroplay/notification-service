@@ -191,7 +191,7 @@ export interface NotificationServiceClient {
 
   getDeliveryReport(request: DeliveryReportRequest): Observable<DeliveryReportResponse>;
 
-  findOneMessage(request: FindOneMessage): Observable<CommonResponseObj>;
+  findMessage(request: FindOneMessage): Observable<CommonResponseObj>;
 
   findAllMessages(request: ClientIdRequest): Observable<CommonResponseObj>;
 
@@ -241,9 +241,7 @@ export interface NotificationServiceController {
     request: DeliveryReportRequest,
   ): Promise<DeliveryReportResponse> | Observable<DeliveryReportResponse> | DeliveryReportResponse;
 
-  findOneMessage(
-    request: FindOneMessage,
-  ): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
+  findMessage(request: FindOneMessage): Promise<CommonResponseObj> | Observable<CommonResponseObj> | CommonResponseObj;
 
   findAllMessages(
     request: ClientIdRequest,
@@ -290,7 +288,7 @@ export function NotificationServiceControllerMethods() {
       "sendOtp",
       "verifyOtp",
       "getDeliveryReport",
-      "findOneMessage",
+      "findMessage",
       "findAllMessages",
       "updateMessage",
       "deleteMessage",
