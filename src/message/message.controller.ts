@@ -20,7 +20,7 @@ export class MessageController {
     return this.messageService.createMessage(payload);
   }
 
-  @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'findOneMessage')
+  @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'findMessage')
   findOneMessage(payload: FindOneMessage) {
     return this.messageService.findOneMessage(payload);
   }
