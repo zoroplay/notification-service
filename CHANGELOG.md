@@ -1,3 +1,10 @@
+# [1.0.0-staging.9](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.8...v1.0.0-staging.9) (2026-02-25)
+
+
+### Bug Fixes
+
+* modified proto path ([f07fb11](https://github.com/zoroplay/notification-service/commit/f07fb1122e67b93813766294b5be5db170c588e3))
+
 # [1.0.0-staging.8](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.7...v1.0.0-staging.8) (2025-12-24)
 
 
