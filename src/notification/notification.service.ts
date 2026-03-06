@@ -16,11 +16,22 @@ export class NotificationService {
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {
-    webpush.setVapidDetails(
-      `mailto:${this.configService.get<string>('VAPID_EMAIL')}`,
-      this.configService.get<string>('VAPID_PUBLIC_KEY') || '',
-      this.configService.get<string>('VAPID_PRIVATE_KEY') || '',
-    );
+    if (
+      !this.configService.get<string>('VAPID_EMAIL') ||
+      !this.configService.get<string>('VAPID_PUBLIC_KEY') ||
+      !this.configService.get<string>('VAPID_PRIVATE_KEY')
+    ) {
+      this.logger.warn(
+        'VAPID configuration is incomplete. Push notifications will not work until all VAPID environment variables are set.',
+      );
+    } else {
+      this.logger.log('VAPID configuration loaded successfully');
+      webpush.setVapidDetails(
+        `mailto:${this.configService.get<string>('VAPID_EMAIL')}`,
+        this.configService.get<string>('VAPID_PUBLIC_KEY') || '',
+        this.configService.get<string>('VAPID_PRIVATE_KEY') || '',
+      );
+    }
   }
 
   async savePushSubscription({
