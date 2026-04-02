@@ -1,12 +1,23 @@
 /* eslint-disable prettier/prettier */
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ClientIdRequest, CommonResponseObj, CreateMessageRequest, FindOneMessage, GetUserNotificationsRequest, SendMessageRequest } from 'src/proto/noti.pb';
+import {
+  ClientIdRequest,
+  CommonResponseObj,
+  CreateMessageRequest,
+  FindOneMessage,
+  GetUserNotificationsRequest,
+  SendMessageRequest,
+} from 'src/proto/noti.pb';
+import { IdentityService } from 'src/identity/identity.service';
 
 @Injectable()
 export class MessageService {
-  constructor(private prisma: PrismaService) {}
-
+  constructor(
+    private prisma: PrismaService,
+    private readonly identityService: IdentityService,
+  ) {}
 
   async findAllMessages(payload: ClientIdRequest): Promise<CommonResponseObj> {
     try {
@@ -18,21 +29,23 @@ export class MessageService {
         status: HttpStatus.OK,
         success: true,
         message: 'Messages fetched successfully',
-        data: messages
+        data: messages,
       };
     } catch (err) {
-       console.error(err);
-        return {
-            success: false,
-            message: "",
-            status: HttpStatus.BAD_REQUEST,
-            errors: err.message,
-            data: null,
-        };
+      console.error(err);
+      return {
+        success: false,
+        message: '',
+        status: HttpStatus.BAD_REQUEST,
+        errors: err.message,
+        data: null,
+      };
     }
   }
 
-  async findUserMessages(payload: GetUserNotificationsRequest): Promise<CommonResponseObj> {
+  async findUserMessages(
+    payload: GetUserNotificationsRequest,
+  ): Promise<CommonResponseObj> {
     try {
       const messages = await this.prisma.user_Messages.findMany({
         where: { userID: payload.userId },
@@ -42,17 +55,17 @@ export class MessageService {
         status: HttpStatus.OK,
         success: true,
         message: 'Messages fetched successfully',
-        data: messages
+        data: messages,
       };
     } catch (err) {
-       console.error(err);
-        return {
-            success: false,
-            message: "",
-            status: HttpStatus.BAD_REQUEST,
-            errors: err.message,
-            data: null,
-        };
+      console.error(err);
+      return {
+        success: false,
+        message: '',
+        status: HttpStatus.BAD_REQUEST,
+        errors: err.message,
+        data: null,
+      };
     }
   }
 
@@ -61,15 +74,15 @@ export class MessageService {
       const { clientId, id } = payload;
 
       const message = await this.prisma.messages.findUnique({
-        where: { clientID: clientId, id }
+        where: { clientID: clientId, id },
       });
 
       if (!message) {
         return {
-            success: false,
-            message: `Could not find message with messageId ${id}`,
-            status: HttpStatus.BAD_REQUEST,
-            data: null,
+          success: false,
+          message: `Could not find message with messageId ${id}`,
+          status: HttpStatus.BAD_REQUEST,
+          data: null,
         };
       }
 
@@ -77,23 +90,22 @@ export class MessageService {
         status: HttpStatus.OK,
         success: true,
         message: 'Message created successfully',
-        data: message
+        data: message,
       };
     } catch (err) {
-        console.error(err);
-        return {
-            success: false,
-            message: "",
-            status: HttpStatus.BAD_REQUEST,
-            errors: err.message,
-            data: null,
-        };
+      console.error(err);
+      return {
+        success: false,
+        message: '',
+        status: HttpStatus.BAD_REQUEST,
+        errors: err.message,
+        data: null,
+      };
     }
   }
 
   async deleteMessage(payload: FindOneMessage): Promise<CommonResponseObj> {
     try {
-
       const { clientId, id } = payload;
 
       // Check if role exists and has users
@@ -103,96 +115,124 @@ export class MessageService {
 
       if (!message) {
         return {
-            success: false,
-            message: `Could not find message with messageId ${id}`,
-            status: HttpStatus.BAD_REQUEST,
-            data: null,
+          success: false,
+          message: `Could not find message with messageId ${id}`,
+          status: HttpStatus.BAD_REQUEST,
+          data: null,
         };
       }
 
       await this.prisma.messages.delete({ where: { id } });
-       return {
+      return {
         status: HttpStatus.OK,
         success: true,
         message: 'Message deleted successfully',
-        data: {}
+        data: {},
       };
     } catch (err) {
-     console.error(err);
-        return {
-            success: false,
-            message: "",
-            status: HttpStatus.BAD_REQUEST,
-            errors: err.message,
-            data: null,
-        };
+      console.error(err);
+      return {
+        success: false,
+        message: '',
+        status: HttpStatus.BAD_REQUEST,
+        errors: err.message,
+        data: null,
+      };
     }
   }
 
   async updateMessage(data: CreateMessageRequest): Promise<CommonResponseObj> {
     try {
+      // Remove undefined values and exclude clientId from update data
+      const updateData = Object.fromEntries(
+        Object.entries(data).filter(
+          ([key, value]) => value !== undefined && key !== 'clientId',
+        ),
+      );
 
-        // Remove undefined values and exclude clientId from update data
-        const updateData = Object.fromEntries(
-        Object.entries(data).filter(([key, value]) => 
-            value !== undefined && key !== 'clientId'
-        )
-        );
-
-        // Check if there's anything to update
-        if (Object.keys(updateData).length === 0) {
+      // Check if there's anything to update
+      if (Object.keys(updateData).length === 0) {
         return {
-            success: false,
-            message: "No valid fields provided for update",
-            status: HttpStatus.BAD_REQUEST,
-            errors: "At least one field must be provided for update",
-            data: null,
+          success: false,
+          message: 'No valid fields provided for update',
+          status: HttpStatus.BAD_REQUEST,
+          errors: 'At least one field must be provided for update',
+          data: null,
         };
-        }
+      }
 
-        // Update the banner (this will throw if banner doesn't exist)
-        const updatedMessage = await this.prisma.messages.update({
+      // Update the banner (this will throw if banner doesn't exist)
+      const updatedMessage = await this.prisma.messages.update({
         where: { id: data.id },
         data: updateData,
-        });
+      });
 
-        return {
+      return {
         status: HttpStatus.OK,
         success: true,
         message: 'Message updated successfully',
-        data: updatedMessage
-        };
-
+        data: updatedMessage,
+      };
     } catch (err) {
-        console.error('Error updating message:', err);
-        return {
+      console.error('Error updating message:', err);
+      return {
         success: false,
-        message: "Failed to update message",
+        message: 'Failed to update message',
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         errors: err.message,
         data: null,
-        };
+      };
     }
   }
 
   async createMessage(data: CreateMessageRequest): Promise<CommonResponseObj> {
     try {
 
-      const banner = await this.prisma.messages.create({
-        data: {
-          title: data.title,
-          clientID: data.clientId,
-          content: data.content,
-          imageUrl: data.imageUrl,
-        },
-    
+      const messageData: Prisma.MessagesCreateInput = {
+        title: data.title,
+        clientID: data.clientId,
+        content: data.content,
+        segment: data.segment,
+        imageUrl: data.imageUrl,
+      };
+
+      const message = await this.prisma.messages.create({
+        data: messageData,
       });
       return {
         status: HttpStatus.OK,
         success: true,
         message: 'Message created successfully',
-        data: banner
+        data: message,
       };
+    } catch (err) {
+      console.error(err);
+      return {
+        success: false,
+        message: '',
+        status: HttpStatus.BAD_REQUEST,
+        errors: err.message,
+        data: null,
+      };
+    }
+  }
+
+  async sendMessage(data: SendMessageRequest): Promise<CommonResponseObj> {
+    try {
+
+      const clientSettings = await this.identityService.getClientSettings({
+        clientId: data.clientId,
+        category: 'general',
+      });
+
+      console.log(clientSettings);
+      return {
+        status: HttpStatus.OK,
+        success: true,
+        message: 'Message sent successfully',
+        data: {}
+      };
+
     } catch (err) {
         console.error(err);
         return {
@@ -204,34 +244,4 @@ export class MessageService {
         };
     }
   }
-
-  // async sendMessage(data: SendMessageRequest): Promise<CommonResponseObj> {
-  //   try {
-
-  //     const banner = await this.prisma.messages.create({
-  //       data: {
-  //         title: data.title,
-  //         clientID: data.clientId,
-  //         content: data.content
-  //       },
-    
-  //     });
-  //     return {
-  //       status: HttpStatus.OK,
-  //       success: true,
-  //       message: 'Banner created successfully',
-  //       data: banner
-  //     };
-  //   } catch (err) {
-  //       console.error(err);
-  //       return {
-  //           success: false,
-  //           message: "",
-  //           status: HttpStatus.BAD_REQUEST,
-  //           errors: err.message,
-  //           data: null,
-  //       };
-  //   }
-  // }
-  
 }

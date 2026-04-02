@@ -7,7 +7,8 @@ import {
   CreateMessageRequest,
   FindOneMessage,
   GetUserNotificationsRequest,
-  NOTIFICATION_SERVICE_NAME
+  NOTIFICATION_SERVICE_NAME,
+  SendMessageRequest
 } from 'src/proto/noti.pb';
 import { MessageService } from './message.service';
 
@@ -43,6 +44,11 @@ export class MessageController {
   @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'deleteMessage')
   deleteMessage(payload: FindOneMessage) {
     return this.messageService.deleteMessage(payload);
+  }
+
+  @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'sendMessage')
+  sendMessage(payload: SendMessageRequest) {
+    return this.messageService.sendMessage(payload);
   }
 
 }

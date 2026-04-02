@@ -1,11 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
-import { GetSettingsRequest, GetUserNotificationsRequest, GetUserNotificationsResponse, HandleNotificationsRequest, HandleNotificationsResponse, SaveSettingsRequest, SaveSettingsResponse, SetReadNotificationsRequest, SetReadNotificationsResponse, SettingData } from './proto/noti.pb';
-import { Notifications } from '@prisma/client';
+import {
+  GetSettingsRequest,
+  GetUserNotificationsRequest,
+  GetUserNotificationsResponse,
+  HandleNotificationsRequest,
+  HandleNotificationsResponse,
+  SaveSettingsRequest,
+  SaveSettingsResponse,
+  SetReadNotificationsRequest,
+  SetReadNotificationsResponse,
+  SettingData,
+} from './proto/noti.pb';
 
 @Injectable()
 export class AppService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   response(value: any): {
     userId: number;
@@ -170,7 +180,7 @@ export class AppService {
   }
 
   async getSettings({ clientId }: GetSettingsRequest): Promise<any> {
-    let data = [] as SettingData[];
+    const data = [] as SettingData[];
     const settings = await this.prisma.settings.findMany({
       where: { clientID: clientId },
     });
