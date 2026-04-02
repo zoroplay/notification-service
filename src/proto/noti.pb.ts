@@ -11,6 +11,7 @@ export interface CreateMessageRequest {
   title: string;
   clientId: number;
   content: string;
+  segment: string;
   status: boolean;
   id?: number | undefined;
   createdAt?: string | undefined;
@@ -38,7 +39,7 @@ export interface CommonResponseObj {
 export interface SendMessageRequest {
   clientId: number;
   messageId: number;
-  userId: string;
+  userId?: string | undefined;
 }
 
 export interface HandleNotificationsRequest {

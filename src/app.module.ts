@@ -45,7 +45,6 @@ const configService = new ConfigService();
   providers: [
     AppService,
     PrismaService,
-
   ],
 })
 export class AppModule { }

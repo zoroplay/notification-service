@@ -16,6 +16,10 @@ import {
 } from 'src/proto/noti.pb';
 import * as smpp from 'smpp';
 import { v4 as uuidv4 } from 'uuid';
+import { IdentityService } from 'src/identity/identity.service';
+import { GetSettingsRequest } from 'src/proto/identity.pb';
+import { BettingService } from 'src/betting/betting.service';
+import { GetUsersRequest } from 'src/proto/betting.pb';
 
 const MOMO_API = "https://sms-momo-gateway-arnos.mojabet.co.tz";
 
@@ -29,42 +33,44 @@ export class SmsService implements OnModuleInit {
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER)
     private cache: Cache,
+    private readonly identityService: IdentityService,
+    private readonly bettingService: BettingService,
   ) { }
 
   onModuleInit() {
-    let isConnected = false;
+    // let isConnected = false;
 
-    this.smppSession = smpp.connect({
-      url: 'smpp://10.190.2.253:10010',
-      auto_enquire_link_period: 10000,
-      debug: true,
-    });
+    // this.smppSession = smpp.connect({
+    //   url: 'smpp://10.190.2.253:10010',
+    //   auto_enquire_link_period: 10000,
+    //   debug: true,
+    // });
 
-    this.smppSession.bind_transceiver(
-      {
-        system_id: 'Raimax_V01',
-        password: 'Raimax@123',
-      },
-      (pdu) => {
-        if (pdu.command_status == 0) {
-          console.log('Successfully bound');
-          isConnected = true;
-        }
-      },
-    );
+    // this.smppSession.bind_transceiver(
+    //   {
+    //     system_id: 'Raimax_V01',
+    //     password: 'Raimax@123',
+    //   },
+    //   (pdu) => {
+    //     if (pdu.command_status == 0) {
+    //       console.log('Successfully bound');
+    //       isConnected = true;
+    //     }
+    //   },
+    // );
 
-    this.smppSession.on('close', () => {
-      console.log('smpp is now disconnected');
+    // this.smppSession.on('close', () => {
+    //   console.log('smpp is now disconnected');
 
-      if (isConnected) {
-        this.smppSession.connect(); //reconnect again
-      }
-    });
+    //   if (isConnected) {
+    //     this.smppSession.connect(); //reconnect again
+    //   }
+    // });
 
-    this.smppSession.on('error', (error) => {
-      console.log('smpp error', error);
-      isConnected = false;
-    });
+    // this.smppSession.on('error', (error) => {
+    //   console.log('smpp error', error);
+    //   isConnected = false;
+    // });
   }
 
   async handleVerifyOTP(request) {
@@ -1074,5 +1080,22 @@ export class SmsService implements OnModuleInit {
 
     return id;
   }
+
+
+  async GetUsersRequest(data: GetUsersRequest): Promise<any> {
+    try {
+      const users = await this.bettingService.GetUsersBySegment(data);
+
+      console.log("users", users);
+      
+      return users;
+    } catch (error) {
+      return {
+        status: false,
+        message: `Failed to get client settings: ${error.message}`,
+      };
+    }
+  }
+
 
 }
