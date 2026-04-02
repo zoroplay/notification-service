@@ -1,3 +1,10 @@
+# [1.0.0-staging.10](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.9...v1.0.0-staging.10) (2026-04-02)
+
+
+### Bug Fixes
+
+* send message ([0a4b9fe](https://github.com/zoroplay/notification-service/commit/0a4b9fe56a6b6ccdd9df1c1a315235316ed0cc8e))
+
 # [1.0.0-staging.9](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.8...v1.0.0-staging.9) (2026-02-25)
 
 
