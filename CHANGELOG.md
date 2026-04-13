@@ -1,3 +1,10 @@
+# [1.0.0-staging.11](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.10...v1.0.0-staging.11) (2026-04-13)
+
+
+### Bug Fixes
+
+* use .env instead of .env.staging in docker-compose ([72b528d](https://github.com/zoroplay/notification-service/commit/72b528da5f7850d54d762602625806ab1b6dac8b))
+
 # [1.0.0-staging.10](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.9...v1.0.0-staging.10) (2026-04-02)
 
 
