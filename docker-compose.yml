@@ -5,7 +5,7 @@ services:
     ports:
       - "9013:5000"
     env_file:
-      - .env.staging
+      - .env
     restart: unless-stopped
     networks:
       - sbenet
