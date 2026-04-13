@@ -10,13 +10,11 @@ import {
   GetUserNotificationsRequest,
   SendMessageRequest,
 } from 'src/proto/noti.pb';
-import { IdentityService } from 'src/identity/identity.service';
 
 @Injectable()
 export class MessageService {
   constructor(
     private prisma: PrismaService,
-    private readonly identityService: IdentityService,
   ) {}
 
   async findAllMessages(payload: ClientIdRequest): Promise<CommonResponseObj> {
@@ -219,20 +217,12 @@ export class MessageService {
 
   async sendMessage(data: SendMessageRequest): Promise<CommonResponseObj> {
     try {
-
-      const clientSettings = await this.identityService.getClientSettings({
-        clientId: data.clientId,
-        category: 'general',
-      });
-
-      console.log(clientSettings);
       return {
         status: HttpStatus.OK,
         success: true,
         message: 'Message sent successfully',
         data: {}
       };
-
     } catch (err) {
         console.error(err);
         return {
