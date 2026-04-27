@@ -32,9 +32,7 @@ export class SmsService implements OnModuleInit {
   constructor(
     private prisma: PrismaService,
     @Inject(CACHE_MANAGER)
-    private cache: Cache,
-    private readonly identityService: IdentityService,
-    private readonly bettingService: BettingService,
+    private cache: Cache
   ) { }
 
   onModuleInit() {
@@ -196,6 +194,77 @@ export class SmsService implements OnModuleInit {
           return this.sendMessageAfricaTalking(data, smsProvider);
         case '9bits':
           return this.sendMessage9bits(data, smsProvider);
+        case 'cpl':
+          return this.sendMessageCPL(data, smsProvider);
+        default:
+          return { success: false, message: 'SMS gateway does not exist in switch' };
+      }
+    } else {
+      const errorMessage = request.countryCode && (request.countryCode === 'ZW' || request.countryCode === 'LS')
+        ? `No SMS gateway found for country code: ${request.countryCode}`
+        : 'No SMS gateway found';
+      return { status: false, message: errorMessage };
+    }
+  }
+
+  async handleSMS(request: SendOtpRequest) {
+    // Build the where clause based on country code
+    const whereClause: any = {
+      status: true,
+      clientID: request.clientID,
+    };
+
+    // If countryCode is provided and is ZW or LS, filter by senderID
+    if (request.countryCode && (request.countryCode === 'ZW' || request.countryCode === 'LS')) {
+      const senderIDMap = {
+        'ZW': 'Bwinners ZW',
+        'LS': 'Bwinners LS'
+      };
+      whereClause.senderID = senderIDMap[request.countryCode];
+    }
+
+    const smsProvider = await this.prisma.settings.findFirst({
+      where: whereClause,
+    });
+
+    console.log("SMS Provider:", smsProvider);
+
+    if (smsProvider) {
+     
+
+      const data = {
+        sender: smsProvider.senderID,
+        receiver: request.phoneNumber,
+        operator: request.operator || 'VODACOM',
+        message: request.message,
+      };
+
+      console.log("data", data);
+      // return { success: true, message: 'Success', status: true };
+
+      switch (smsProvider.gatewayName) {
+        case 'yournotify':
+          return this.sendMessageYourNotify(data, smsProvider);
+        case 'mtech':
+          return this.sendMessageMetch(data, smsProvider);
+        case 'nanobox':
+          return this.sendMessageNanoBox(data, smsProvider);
+        case 'termii':
+          return this.sendMessageTermii(data, smsProvider);
+        case 'momo':
+          return this.sendMessageMomo(data, smsProvider);
+        case 'robersms':
+          return this.sendMessageRoberms(data, smsProvider);
+        case 'smsense':
+          return this.sendMessageSmsense(data, smsProvider);
+        case 'vasmobile':
+          return this.sendMessageVasMobile(data, smsProvider);
+        case 'africastalking':
+          return this.sendMessageAfricaTalking(data, smsProvider);
+        case '9bits':
+          return this.sendMessage9bits(data, smsProvider);
+        case 'cpl':
+          return this.sendMessageCPL(data, smsProvider);
         default:
           return { success: false, message: 'SMS gateway does not exist in switch' };
       }
@@ -647,101 +716,6 @@ export class SmsService implements OnModuleInit {
     }
   }
 
-  // async sendMessageAfricaTalking(
-  //   messageData: MessageData,
-  //   smsProvider: SettingData,
-  // ): Promise<any> {
-  //   try {
-  //     const payload = {
-  //           username: smsProvider.username,
-  //           phoneNumbers: [messageData.receiver],
-  //           senderId: smsProvider.senderID,
-  //           message: messageData.message,
-  //     };
-
-  //     console.log("payload", payload )
-
-  //     const response: { status: string; message: string; data: any } =
-  //       await axios.post('https://api.africastalking.com/version1/messaging/bulk', payload, {
-  //         headers: {
-  //           'apiKey': smsProvider.apiKey,
-  //           "Content-Type": 'application/json'
-  //         },
-  //       });
-
-  //       console.log("response", response);
-
-  //     if (response.data.status !== 101) {
-  //       messageData.status = false;
-  //       // save message as failed
-  //       this.saveMessage({
-  //         data: messageData,
-  //         provider: smsProvider,
-  //         response: response.data,
-  //       });
-  //       return { status: false, message: response.data.message };
-  //     } else {
-  //       messageData.status = true;
-  //       // save message as success
-  //       this.saveMessage({
-  //         data: messageData,
-  //         provider: smsProvider,
-  //         response: response.data,
-  //       });
-  //       return { status: true, message: response.data.message };
-  //     }
-  //   } catch (error) {
-  //     return { status: false, message: `Failed to send OTP: ${error.message}` };
-  //   }
-  // }
-
-  // async sendMessage9bits(
-  //   messageData: MessageData,
-  //   smsProvider: SettingData,
-  // ): Promise<any> {
-  //   try {
-  //     const payload = {
-  //           to: [messageData.receiver],
-  //           from: smsProvider.senderID,
-  //           content: messageData.message,
-  //     };
-
-  //     console.log("payload", payload )
-
-  //     const response: { status: string; message: string; data: any } =
-  //       await axios.post('https://api.9bits.net:2096/ng/v1/sendsms', payload, {
-  //         headers: {
-  //           'Authorization': `Bearer ${smsProvider.apiKey}` ,
-  //           "Content-Type": 'application/json'
-  //         },
-  //       });
-
-  //       console.log("response", response);
-
-  //     if (response.data.status !== 200) {
-  //       messageData.status = false;
-  //       // save message as failed
-  //       this.saveMessage({
-  //         data: messageData,
-  //         provider: smsProvider,
-  //         response: response.data,
-  //       });
-  //       return { status: false, message: response.data.message };
-  //     } else {
-  //       messageData.status = true;
-  //       // save message as success
-  //       this.saveMessage({
-  //         data: messageData,
-  //         provider: smsProvider,
-  //         response: response.data,
-  //       });
-  //       return { status: true, message: response.data.message };
-  //     }
-  //   } catch (error) {
-  //     return { status: false, message: `Failed to send OTP: ${error.message}` };
-  //   }
-  // }
-
   async sendMessage9bits(
   messageData: MessageData,
   smsProvider: SettingData,
@@ -797,6 +771,75 @@ export class SmsService implements OnModuleInit {
   } catch (error: any) {
     // This catches network / runtime errors
     console.error('9BITS AXIOS ERROR:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+
+    return {
+      status: false,
+      message: `Failed to send OTP: ${
+        error.response?.data?.message || error.message
+      }`,
+    };
+  }
+}
+
+ async sendMessageCPL(
+  messageData: MessageData,
+  smsProvider: SettingData,
+): Promise<any> {
+  try {
+    const payload = {
+      recipient: messageData.receiver,
+      sender_id: smsProvider.senderID,
+      message: messageData.message,
+    };
+
+    console.log('CPL PAYLOAD:', payload);
+
+    const response = await axios.post(
+      'https://api.cpl.com.ng/api/client/sms/send',
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${smsProvider.apiKey}`,
+          'Content-Type': 'application/json',
+        }
+      },
+    );
+
+    // Use HTTP status code, not response.data.status
+    if (response.data.success === false) {
+      messageData.status = false;
+
+      await this.saveMessage({
+        data: messageData,
+        provider: smsProvider,
+        response: response.data,
+      });
+
+      return {
+        status: false,
+        message: response.data?.message || 'Failed to send SMS',
+      };
+    }
+
+    messageData.status = true;
+
+    await this.saveMessage({
+      data: messageData,
+      provider: smsProvider,
+      response: response.data,
+    });
+
+    return {
+      status: true,
+      message: response.data?.message || 'SMS sent successfully',
+    };
+  } catch (error: any) {
+    // This catches network / runtime errors
+    console.error('CPL AXIOS ERROR:', {
       message: error.message,
       status: error.response?.status,
       data: error.response?.data,
@@ -1079,22 +1122,6 @@ export class SmsService implements OnModuleInit {
     }
 
     return id;
-  }
-
-
-  async GetUsersRequest(data: GetUsersRequest): Promise<any> {
-    try {
-      const users = await this.bettingService.GetUsersBySegment(data);
-
-      console.log("users", users);
-      
-      return users;
-    } catch (error) {
-      return {
-        status: false,
-        message: `Failed to get client settings: ${error.message}`,
-      };
-    }
   }
 
 

@@ -10,12 +10,53 @@ import {
   GetUserNotificationsRequest,
   SendMessageRequest,
 } from 'src/proto/noti.pb';
+import { IdentityService } from 'src/identity/identity.service';
+import { BettingService } from 'src/betting/betting.service';
+import { SmsService } from 'src/sms/sms.service';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class MessageService {
   constructor(
     private prisma: PrismaService,
+    private readonly identityService: IdentityService,
+    private readonly bettingService: BettingService,
+    private readonly smsService: SmsService,
+    private readonly emailService: EmailService,
   ) {}
+
+  private parseMetadata(metadataJson?: string): Record<string, any> {
+    if (!metadataJson) return {};
+    try {
+      return JSON.parse(metadataJson);
+    } catch {
+      return {};
+    }
+  }
+
+  private buildSimulatedUsers(clientId: number, count = 10) {
+    return Array.from({ length: count }, (_, idx) => {
+      const userId = idx + 1;
+      const phoneNumber =
+        idx === 0 ? '2348137048054' : `2557000000${String(userId).padStart(2, '0')}`;
+      const emailAddress =
+        idx === 0
+          ? 'godfather.franklyn@gmail.com'
+          : `test.user${userId}@example.com`;
+      return {
+        client_id: clientId,
+        userId,
+        segment_code: 'SIMULATED_TEST',
+        username: phoneNumber,
+        assigned_at_unix: Date.now(),
+        emailAddress,
+        metadataJson: JSON.stringify({
+          avg_bet: 75000,
+          vip_level: 5,
+        }),
+      };
+    });
+  }
 
   async findAllMessages(payload: ClientIdRequest): Promise<CommonResponseObj> {
     try {
@@ -185,7 +226,6 @@ export class MessageService {
 
   async createMessage(data: CreateMessageRequest): Promise<CommonResponseObj> {
     try {
-
       const messageData: Prisma.MessagesCreateInput = {
         title: data.title,
         clientID: data.clientId,
@@ -215,23 +255,251 @@ export class MessageService {
     }
   }
 
+  // async sendMessage(data: SendMessageRequest): Promise<CommonResponseObj> {
+  //   try {
+  //     const clientSettings = await this.identityService.getClientSettings({
+  //       clientId: data.clientId,
+  //       category: 'general',
+  //     });
+
+  //     const settings = clientSettings?.data || [];
+
+  //     // Find the specific settings
+  //     const emailSetting = settings.find(
+  //       (s) => s.option === 'enable_email_notifications',
+  //     );
+
+  //     const smsSetting = settings.find(
+  //       (s) => s.option === 'enable_sms_notifications',
+  //     );
+
+  //     // Convert to boolean
+  //     const isEmailEnabled = emailSetting?.value === '1';
+  //     const isSmsEnabled = smsSetting?.value === '1';
+
+  //     console.log({ isEmailEnabled, isSmsEnabled });
+
+  //     const users = await this.bettingService.GetUsersBySegment({
+  //       clientId: data.clientId,
+  //       segmentCode: 'HIGH_ROLLER',
+  //       limit: 100,
+  //       cursor: '1',
+  //       assignedAfterUnix: 0,
+  //     });
+
+  //     console.log(users);
+
+  //     if (isEmailEnabled) {
+  //     }
+
+  //     if (isSmsEnabled) {
+  //       const smsProvider = await this.smsService.handleSMS({
+  //         clientID: data.clientId,
+  //         phoneNumber: users.data[0].phoneNumber,
+  //         operator: users.data[0].operator,
+  //         message: data.content,
+  //       });
+  //     }
+
+  //     return {
+  //       status: HttpStatus.OK,
+  //       success: true,
+  //       message: 'Message sent successfully',
+  //       data: {},
+  //     };
+  //   } catch (err) {
+  //     console.error(err);
+  //     return {
+  //       success: false,
+  //       message: '',
+  //       status: HttpStatus.BAD_REQUEST,
+  //       errors: err.message,
+  //       data: null,
+  //     };
+  //   }
+  // }
+
   async sendMessage(data: SendMessageRequest): Promise<CommonResponseObj> {
     try {
+      console.log('data', data);
+
+      const dbMessage = await this.prisma.messages.findFirst({
+        where: {
+          id: data.messageId,
+          clientID: data.clientId,
+        },
+      });
+
+      console.log('dbMessage', dbMessage);
+
+      if (!dbMessage?.content) {
+        return {
+          success: false,
+          message: 'Message content not found',
+          status: HttpStatus.BAD_REQUEST,
+          data: null,
+        };
+      }
+
+      const messageText = dbMessage.content;
+
+      const clientSettings = await this.identityService.getClientSettings({
+        clientId: data.clientId,
+        category: 'general',
+      });
+
+      const settings = clientSettings?.data || [];
+
+      const settingsMap = Object.fromEntries(
+        settings.map((s) => [s.option, s.value]),
+      );
+
+      const isEmailEnabled = settingsMap.enable_email_notifications === '1';
+      const isSmsEnabled = settingsMap.enable_sms_notifications === '1';
+
+      console.log({ isEmailEnabled, isSmsEnabled });
+
+      if (!isEmailEnabled && !isSmsEnabled) {
+        return {
+          status: HttpStatus.OK,
+          success: true,
+          message: 'Both email and SMS notifications are disabled for this client',
+          data: {
+            totalUsers: 0,
+            simulationUsed: false,
+            channels: {
+              sms: { enabled: false, success: 0, failed: 0 },
+              email: { enabled: false, success: 0, failed: 0 },
+            },
+          },
+        };
+      }
+
+      let cursor: string | undefined = '1';
+      let hasMore = true;
+      const limit = 50;
+      const users: any[] = [];
+
+      if (data.segment) {
+        while (hasMore) {
+          const response = await this.bettingService.GetUsersBySegment({
+            clientId: data.clientId,
+            segmentCode: data.segment,
+            limit,
+            cursor: cursor || '1',
+            assignedAfterUnix: 0,
+          });
+
+          const pageUsers = response?.users || [];
+          users.push(...pageUsers);
+
+          console.log(`Fetched ${pageUsers.length} users (cursor: ${cursor})`);
+
+          if (!pageUsers.length) break;
+
+          if (response.nextCursor) {
+            cursor = response.nextCursor;
+          } else {
+            hasMore = false;
+          }
+        }
+      }
+
+      let activeUsers = users;
+      let simulationUsed = false;
+
+      if (!activeUsers.length) {
+        simulationUsed = true;
+        activeUsers = this.buildSimulatedUsers(data.clientId, 1);
+      }
+
+      let smsSuccess = 0;
+      let smsFailed = 0;
+      let emailSuccess = 0;
+      let emailFailed = 0;
+
+      console.log('activeUsers', activeUsers[0]);
+
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < activeUsers.length; i += BATCH_SIZE) {
+        const batch = activeUsers.slice(i, i + BATCH_SIZE);
+
+        await Promise.allSettled(
+          batch.map(async (user) => {
+            const meta = this.parseMetadata(user.metadataJson);
+            const phoneNumber = user.username;
+            const operator = meta.operator || 'VODACOM';
+            const email = user.emailAddress;
+            const emailFrom =
+              process.env.SENDGRID_FROM_EMAIL || 'no-reply@bwinners.com';
+
+            if (isSmsEnabled && phoneNumber) {
+              try {
+                await this.smsService.handleSMS({
+                  clientID: data.clientId,
+                  phoneNumber,
+                  operator,
+                  message: messageText,
+                });
+                smsSuccess++;
+              } catch (smsErr) {
+                smsFailed++;
+                console.error(`SMS failed for user ${user.userId}:`, smsErr?.message);
+              }
+            }
+
+            if (isEmailEnabled && email) {
+              try {
+                await this.emailService.sendEmail({
+                  to: email,
+                  from: emailFrom,
+                  subject: `Message Notification (${data.clientId})`,
+                  text: messageText,
+                  html: `<p>${messageText}</p>`,
+                });
+                emailSuccess++;
+              } catch (emailErr) {
+                emailFailed++;
+                console.error(
+                  `Email failed for user ${user.userId}:`,
+                  emailErr?.message,
+                );
+              }
+            }
+          }),
+        );
+      }
       return {
         status: HttpStatus.OK,
         success: true,
-        message: 'Message sent successfully',
-        data: {}
+        message: 'Message processing completed successfully',
+        data: {
+          totalUsers: activeUsers.length,
+          simulationUsed,
+          channels: {
+            sms: {
+              enabled: isSmsEnabled,
+              success: smsSuccess,
+              failed: smsFailed,
+            },
+            email: {
+              enabled: isEmailEnabled,
+              success: emailSuccess,
+              failed: emailFailed,
+            },
+          },
+        },
       };
     } catch (err) {
-        console.error(err);
-        return {
-            success: false,
-            message: "",
-            status: HttpStatus.BAD_REQUEST,
-            errors: err.message,
-            data: null,
-        };
+      console.error(err);
+
+      return {
+        success: false,
+        message: '',
+        status: HttpStatus.BAD_REQUEST,
+        errors: err.message,
+        data: null,
+      };
     }
   }
 }
