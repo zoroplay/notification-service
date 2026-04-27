@@ -18,7 +18,7 @@ env:
 
 jobs:
   version:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
@@ -59,7 +59,7 @@ jobs:
 
   build:
     needs: version
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -101,7 +101,7 @@ jobs:
 
   release:
     needs: [version, build]
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/staging'
     steps:
       - name: Checkout code
@@ -152,7 +152,7 @@ jobs:
 
   deploy:
     needs: [version, build, release]
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/staging'
     steps:
       - name: Checkout code
@@ -185,14 +185,12 @@ jobs:
 
       - name: Create .env file
         run: |
-          # Determine which environment file to use based on branch
           if [ "${{ github.ref }}" = "refs/heads/staging" ]; then
-            cp .env.staging .env
+            echo "${{ secrets.ENV_STAGING }}" > .env
           elif [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            cp .env.production .env
+            echo "${{ secrets.ENV_PRODUCTION }}" > .env
           else
-            echo "Unknown branch, using staging config"
-            cp .env.staging .env
+            echo "${{ secrets.ENV_STAGING }}" > .env
           fi
 
       - name: Prepare deployment files
@@ -236,7 +234,7 @@ jobs:
 
   deploy-production:
     needs: [version, build, release]
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     steps:
       - name: Checkout code
@@ -249,7 +247,7 @@ jobs:
 
       - name: Create .env file
         run: |
-          cp .env.production .env
+          echo "${{ secrets.ENV_PRODUCTION }}" > .env
 
       - name: Prepare deployment files
         run: |
