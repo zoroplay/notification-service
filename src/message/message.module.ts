@@ -4,10 +4,15 @@ import { Module } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MessageController } from './message.controller';
 import { MessageService } from './message.service';
+import { IdentityModule } from 'src/identity/identity.module';
+import { BettingModule } from 'src/betting/betting.module';
+import { SmsModule } from 'src/sms/sms.module';
+import { SmsService } from 'src/sms/sms.service';
+import { EmailService } from 'src/email/email.service';
 
 @Module({
-  imports: [CacheModule.register({ isGlobal: true })],
+  imports: [IdentityModule, BettingModule, SmsModule, CacheModule.register({ isGlobal: true })],
   controllers: [MessageController],
-  providers: [PrismaService, MessageService],
+  providers: [PrismaService, MessageService, SmsService, EmailService],
 })
-export class MessageModule {}
+export class MessageModule { }
