@@ -1,3 +1,10 @@
+# [1.0.0-staging.13](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.12...v1.0.0-staging.13) (2026-05-05)
+
+
+### Features
+
+* agent in-app message ([adb6585](https://github.com/zoroplay/notification-service/commit/adb65854c269ddeb375f881280a92dc8782cdbc5))
+
 # [1.0.0-staging.12](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.11...v1.0.0-staging.12) (2026-04-27)
 
 
