@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { GrpcMethod } from '@nestjs/microservices';
-import { GetSettingsRequest, GetSettingsResponse, GetUserNotificationsRequest, HandleNotificationsRequest, NOTIFICATION_SERVICE_NAME, SaveSettingsRequest, SaveSettingsResponse, SetReadNotificationsRequest } from './proto/noti.pb';
+import { DeleteAgentNotificationRequest, GetSettingsRequest, GetSettingsResponse, GetUserNotificationsRequest, HandleNotificationsRequest, NOTIFICATION_SERVICE_NAME, SaveSettingsRequest, SaveSettingsResponse, SetReadNotificationsRequest } from './proto/noti.pb';
 
 @Controller()
 export class AppController {
@@ -33,6 +33,11 @@ export class AppController {
     GetUserNotificationsDto: GetUserNotificationsRequest,
   ) {
     return this.appService.getUserNotifications(GetUserNotificationsDto);
+  }
+
+  @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'DeleteAgentNotification')
+  async DeleteAgentNotification(dto: DeleteAgentNotificationRequest) {
+    return this.appService.deleteAgentNotification(dto);
   }
 
   @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'HandleNotifications')

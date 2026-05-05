@@ -36,8 +36,10 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/microservices": "^10.2.8",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.4.22",
     "@nestjs/schedule": "^3.0.4",
     "@nestjs/typeorm": "^10.0.0",
+    "@nestjs/websockets": "^10.4.22",
     "@prisma/client": "^5.6.0",
     "@sendgrid/mail": "^8.1.6",
     "axios": "^1.5.1",
@@ -51,7 +53,8 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "sbe-service-proto": "git+https://github.com/zoroplay/sbe-service-proto.git#main",
-    "smpp": "^0.6.0-rc.4"
+    "smpp": "^0.6.0-rc.4",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

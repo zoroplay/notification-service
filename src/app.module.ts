@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as redisStore from "cache-manager-redis-store";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import { InAppGateway } from "./in-app/in-app.gateway";
 import { MessageModule } from "./message/message.module";
 import { PrismaService } from './prisma/prisma.service';
 import { SmsModule } from "./sms/sms.module";
@@ -45,6 +46,7 @@ const configService = new ConfigService();
   providers: [
     AppService,
     PrismaService,
+    InAppGateway,
   ],
 })
 export class AppModule { }

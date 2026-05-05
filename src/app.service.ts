@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma/prisma.service';
 import {
+  DeleteAgentNotificationRequest,
+  DeleteAgentNotificationResponse,
   GetSettingsRequest,
   GetUserNotificationsRequest,
   GetUserNotificationsResponse,
@@ -12,10 +14,14 @@ import {
   SetReadNotificationsResponse,
   SettingData,
 } from './proto/noti.pb';
+import { InAppGateway } from './in-app/in-app.gateway';
 
 @Injectable()
 export class AppService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly inAppGateway: InAppGateway,
+  ) {}
 
   response(value: any): {
     userId: number;
@@ -25,12 +31,16 @@ export class AppService {
     createdAt: string;
     id: number;
   } {
+    const createdAt =
+      value.createdAt instanceof Date
+        ? value.createdAt.toISOString()
+        : String(value.createdAt ?? '');
     return {
       ...value,
       description: value.description,
       title: value.title,
       status: value.status,
-      createdAt: value.createdAt,
+      createdAt,
       id: value.id,
       userId: value.userID,
     };
@@ -105,35 +115,95 @@ export class AppService {
     }
   }
 
-  async handleUserNotifications({
-    userId,
-    description,
-    title,
-  }: HandleNotificationsRequest): Promise<HandleNotificationsResponse> {
+  private resolveNotificationRecipientIds(
+    request: HandleNotificationsRequest,
+  ): number[] {
+    const fromList = (request.userIds ?? []).filter(
+      (id) => Number.isFinite(id) && id > 0,
+    );
+    if (fromList.length > 0) {
+      return [...new Set(fromList)];
+    }
+    if (request.userId > 0) {
+      return [request.userId];
+    }
+    return [];
+  }
+
+  async handleUserNotifications(
+    request: HandleNotificationsRequest,
+  ): Promise<HandleNotificationsResponse> {
+    const recipientIds = this.resolveNotificationRecipientIds(request);
+    if (recipientIds.length === 0) {
+      return {
+        status: false,
+        message: 'No recipient user ids',
+        data: undefined,
+        dataList: [],
+      };
+    }
+
+    const { description, title } = request;
     try {
-      const user = await this.prisma.notifications.create({
-        data: {
-          userID: userId,
-          description: description,
-          title: title,
-        },
-      });
-      const new_user = this.response(user);
+      const rows = await this.prisma.$transaction(
+        recipientIds.map((uid) =>
+          this.prisma.notifications.create({
+            data: {
+              userID: uid,
+              description,
+              title,
+            },
+          }),
+        ),
+      );
+
+      const dataList = rows.map((row) => this.response(row));
+      for (let i = 0; i < rows.length; i++) {
+        this.inAppGateway.emitNotificationNew(recipientIds[i], dataList[i]);
+      }
 
       return {
         status: true,
         message: 'Notifications created successfully',
-        data: new_user,
+        data: dataList[0],
+        dataList,
       };
     } catch (error) {
-      return { status: false, message: error.message, data: null };
+      return {
+        status: false,
+        message: error.message,
+        data: undefined,
+        dataList: [],
+      };
     }
   }
 
   async setReadNotifications({
     id,
+    userId,
   }: SetReadNotificationsRequest): Promise<SetReadNotificationsResponse> {
     try {
+      const existing = await this.prisma.notifications.findFirst({
+        where: { id, deletedAt: null },
+      });
+      if (!existing) {
+        return {
+          status: false,
+          message: 'Notification not found',
+          data: undefined,
+        };
+      }
+      if (
+        userId !== undefined &&
+        userId !== null &&
+        existing.userID !== userId
+      ) {
+        return {
+          status: false,
+          message: 'Forbidden',
+          data: undefined,
+        };
+      }
       const user = await this.prisma.notifications.update({
         where: {
           id,
@@ -143,6 +213,7 @@ export class AppService {
         },
       });
       const new_user = this.response(user);
+      this.inAppGateway.emitNotificationRead(user.userID, new_user);
       return {
         status: true,
         message: 'handled read notifications successfully',
@@ -152,19 +223,44 @@ export class AppService {
       return {
         status: false,
         message: error.message,
-        data: null,
+        data: undefined,
       };
+    }
+  }
+
+  async deleteAgentNotification({
+    id,
+    userId,
+  }: DeleteAgentNotificationRequest): Promise<DeleteAgentNotificationResponse> {
+    try {
+      const existing = await this.prisma.notifications.findFirst({
+        where: { id, userID: userId, deletedAt: null },
+      });
+      if (!existing) {
+        return { status: false, message: 'Notification not found' };
+      }
+      await this.prisma.notifications.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      });
+      this.inAppGateway.emitNotificationDeleted(userId, id);
+      return { status: true, message: 'Notification deleted' };
+    } catch (error) {
+      return { status: false, message: error.message };
     }
   }
 
   async getUserNotifications({
     userId,
+    includeRead,
   }: GetUserNotificationsRequest): Promise<GetUserNotificationsResponse> {
     const users = await this.prisma.notifications.findMany({
       where: {
         userID: userId,
-        status: 0,
+        deletedAt: null,
+        ...(includeRead ? {} : { status: 0 }),
       },
+      orderBy: { createdAt: 'desc' },
     });
 
     const handled_users = await Promise.all(
