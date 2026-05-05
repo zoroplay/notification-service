@@ -48,20 +48,40 @@ export interface HandleNotificationsRequest {
   userId: number;
   description: string;
   title: string;
+  /** If non-empty, notifications are created for these user ids only. If empty, userId (field 1) is used as a single recipient. */
+  userIds: number[];
 }
 
 export interface GetUserNotificationsRequest {
   userId: number;
+  /** When true, returns all non-deleted notifications (read and unread). Default false = unread only. */
+  includeRead?: boolean | undefined;
 }
 
 export interface SetReadNotificationsRequest {
   id: number;
+  /** When set, the service verifies the notification belongs to this user before marking read. */
+  userId?: number | undefined;
+}
+
+export interface DeleteAgentNotificationRequest {
+  id: number;
+  userId: number;
+}
+
+export interface DeleteAgentNotificationResponse {
+  message: string;
+  status: boolean;
 }
 
 export interface HandleNotificationsResponse {
   message: string;
   status: boolean;
-  data?: Notifications | undefined;
+  data?:
+    | Notifications
+    | undefined;
+  /** All created notifications (same order as recipients). For one recipient, data matches dataList[0]. */
+  dataList: Notifications[];
 }
 
 export interface SetReadNotificationsResponse {
@@ -363,6 +383,8 @@ export interface NotificationServiceClient {
 
   handleNotifications(request: HandleNotificationsRequest): Observable<HandleNotificationsResponse>;
 
+  deleteAgentNotification(request: DeleteAgentNotificationRequest): Observable<DeleteAgentNotificationResponse>;
+
   saveSettings(request: SaveSettingsRequest): Observable<SaveSettingsResponse>;
 
   getSettings(request: GetSettingsRequest): Observable<GetSettingsResponse>;
@@ -458,6 +480,13 @@ export interface NotificationServiceController {
   handleNotifications(
     request: HandleNotificationsRequest,
   ): Promise<HandleNotificationsResponse> | Observable<HandleNotificationsResponse> | HandleNotificationsResponse;
+
+  deleteAgentNotification(
+    request: DeleteAgentNotificationRequest,
+  ):
+    | Promise<DeleteAgentNotificationResponse>
+    | Observable<DeleteAgentNotificationResponse>
+    | DeleteAgentNotificationResponse;
 
   saveSettings(
     request: SaveSettingsRequest,
@@ -618,6 +647,7 @@ export function NotificationServiceControllerMethods() {
       "setReadNotifications",
       "getUserNotifications",
       "handleNotifications",
+      "deleteAgentNotification",
       "saveSettings",
       "getSettings",
       "sendSms",
