@@ -218,17 +218,18 @@ jobs:
             bash ~/notification-service/deploy.sh
           '
 
-      - name: Reset failed migrations
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }} '
-            cd ~/notification-service
-            docker compose run --rm notification-service npx prisma migrate resolve --applied 20250916235259_add_user_log || true
-          '
+      # - name: Reset failed migrations
+      #   run: |
+      #     ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }} '
+      #       cd ~/notification-service
+      #       docker compose run --rm notification-service npx prisma migrate resolve --applied 20250916235259_add_user_log || true
+      #     '
 
       - name: Run migrations
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }} '
             cd ~/notification-service
+            docker compose run --rm notification-service npx prisma migrate resolve --rolled-back 20260505120000_notifications_deleted_at || true
             docker compose run --rm notification-service npx prisma migrate deploy
           '
 
