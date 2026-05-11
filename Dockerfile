@@ -14,5 +14,9 @@ RUN npm run build
 # Generate Prisma client
 RUN npx prisma generate
 
+#grpc port
 EXPOSE 5000
+
+#http port
+EXPOSE 3020
 CMD ["npm", "run", "start:prod"]
