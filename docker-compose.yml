@@ -4,7 +4,7 @@ services:
     container_name: notification-service
     ports:
       - "9013:5000"
-      - "9015:3020"
+      - "9020:3020"
     env_file:
       - .env
     restart: unless-stopped
