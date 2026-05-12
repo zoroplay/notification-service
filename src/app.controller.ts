@@ -9,6 +9,15 @@ export class AppController {
     private readonly appService: AppService
   ) { }
 
+  @Get()
+  root() {
+    return {
+      ok: true,
+      service: 'notification-service',
+      message: 'HTTP server is running (gRPC + Socket.IO /agent-in-app)',
+    };
+  }
+
   @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'SaveSettings')
   async SaveSettings(
     saveSettings: SaveSettingsRequest,
