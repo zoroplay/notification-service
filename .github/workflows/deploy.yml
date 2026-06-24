@@ -144,7 +144,7 @@ jobs:
         run: npx semantic-release
 
   deploy-staging:
-    needs: [version, build, release]
+    needs: [version, build]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/staging'
     steps:
@@ -190,7 +190,7 @@ jobs:
           '
 
   deploy-production:
-    needs: [version, build, release]
+    needs: [version, build]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/hetz-prod'
     steps:
