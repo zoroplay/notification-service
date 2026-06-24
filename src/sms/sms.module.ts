@@ -14,5 +14,6 @@ import { BettingModule } from 'src/betting/betting.module';
   ],
   controllers: [SmsController],
   providers: [PrismaService, SmsService],
+  exports: [SmsService],
 })
 export class SmsModule {}

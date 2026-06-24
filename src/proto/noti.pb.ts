@@ -84,6 +84,22 @@ export interface HandleNotificationsResponse {
   dataList: Notifications[];
 }
 
+export interface NotifyCampaignAwardRequest {
+  clientId: number;
+  userId: number;
+  phoneNumber: string;
+  title: string;
+  message: string;
+  operator?: string | undefined;
+}
+
+export interface NotifyCampaignAwardResponse {
+  message: string;
+  status: boolean;
+  inApp?: Notifications | undefined;
+  smsSent: boolean;
+}
+
 export interface SetReadNotificationsResponse {
   message: string;
   status: boolean;
@@ -383,6 +399,10 @@ export interface NotificationServiceClient {
 
   handleNotifications(request: HandleNotificationsRequest): Observable<HandleNotificationsResponse>;
 
+  /** In-app notification + SMS for CRM campaign/segment bonus awards (uses per-client SMS provider). */
+
+  notifyCampaignAward(request: NotifyCampaignAwardRequest): Observable<NotifyCampaignAwardResponse>;
+
   deleteAgentNotification(request: DeleteAgentNotificationRequest): Observable<DeleteAgentNotificationResponse>;
 
   saveSettings(request: SaveSettingsRequest): Observable<SaveSettingsResponse>;
@@ -480,6 +500,12 @@ export interface NotificationServiceController {
   handleNotifications(
     request: HandleNotificationsRequest,
   ): Promise<HandleNotificationsResponse> | Observable<HandleNotificationsResponse> | HandleNotificationsResponse;
+
+  /** In-app notification + SMS for CRM campaign/segment bonus awards (uses per-client SMS provider). */
+
+  notifyCampaignAward(
+    request: NotifyCampaignAwardRequest,
+  ): Promise<NotifyCampaignAwardResponse> | Observable<NotifyCampaignAwardResponse> | NotifyCampaignAwardResponse;
 
   deleteAgentNotification(
     request: DeleteAgentNotificationRequest,
@@ -647,6 +673,7 @@ export function NotificationServiceControllerMethods() {
       "setReadNotifications",
       "getUserNotifications",
       "handleNotifications",
+      "notifyCampaignAward",
       "deleteAgentNotification",
       "saveSettings",
       "getSettings",
