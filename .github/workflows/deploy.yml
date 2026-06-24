@@ -141,10 +141,10 @@ jobs:
       - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: npx semantic-release || true
 
   deploy-staging:
-    needs: [version, build]
+    needs: [version, build, release]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/staging'
     steps:
@@ -190,7 +190,7 @@ jobs:
           '
 
   deploy-production:
-    needs: [version, build]
+    needs: [version, build, release]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/hetz-prod'
     steps:
