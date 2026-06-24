@@ -1,3 +1,10 @@
+# [1.0.0-staging.14](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.13...v1.0.0-staging.14) (2026-06-24)
+
+
+### Bug Fixes
+
+* modified in app message ([4c00f37](https://github.com/zoroplay/notification-service/commit/4c00f3708568e01042e3db1cf1187f373e0cb043))
+
 # [1.0.0-staging.13](https://github.com/zoroplay/notification-service/compare/v1.0.0-staging.12...v1.0.0-staging.13) (2026-05-05)
 
 
