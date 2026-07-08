@@ -188,7 +188,7 @@ export class AppService {
   }: SetReadNotificationsRequest): Promise<SetReadNotificationsResponse> {
     try {
       const existing = await this.prisma.notifications.findFirst({
-        where: { id, deletedAt: null },
+        where: { id },
       });
       if (!existing) {
         return {
@@ -238,14 +238,13 @@ export class AppService {
   }: DeleteAgentNotificationRequest): Promise<DeleteAgentNotificationResponse> {
     try {
       const existing = await this.prisma.notifications.findFirst({
-        where: { id, userID: userId, deletedAt: null },
+        where: { id, userID: userId },
       });
       if (!existing) {
         return { status: false, message: 'Notification not found' };
       }
-      await this.prisma.notifications.update({
+      await this.prisma.notifications.delete({
         where: { id },
-        data: { deletedAt: new Date() },
       });
       this.inAppGateway.emitNotificationDeleted(userId, id);
       return { status: true, message: 'Notification deleted' };
@@ -261,7 +260,6 @@ export class AppService {
     const users = await this.prisma.notifications.findMany({
       where: {
         userID: userId,
-        deletedAt: null,
         ...(includeRead ? {} : { status: 0 }),
       },
       orderBy: { createdAt: 'desc' },

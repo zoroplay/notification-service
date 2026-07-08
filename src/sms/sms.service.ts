@@ -20,6 +20,8 @@ import { IdentityService } from 'src/identity/identity.service';
 import { GetSettingsRequest } from 'src/proto/identity.pb';
 import { BettingService } from 'src/betting/betting.service';
 import { GetUsersRequest } from 'src/proto/betting.pb';
+import { ConditionalModule } from '@nestjs/config';
+import { normalizeSmsPhone } from './phone.util';
 
 const MOMO_API = "https://sms-momo-gateway-arnos.mojabet.co.tz";
 
@@ -136,7 +138,9 @@ export class SmsService implements OnModuleInit {
   // }
 
   async handleOTP(request: SendOtpRequest) {
+    request.phoneNumber = normalizeSmsPhone(request.phoneNumber);
     // Build the where clause based on country code
+    console.log("request", request);
     const whereClause: any = {
       status: true,
       clientID: request.clientID,
@@ -208,6 +212,7 @@ export class SmsService implements OnModuleInit {
   }
 
   async handleSMS(request: SendOtpRequest) {
+    request.phoneNumber = normalizeSmsPhone(request.phoneNumber);
     // Build the where clause based on country code
     const whereClause: any = {
       status: true,
@@ -293,6 +298,8 @@ export class SmsService implements OnModuleInit {
       return { status: false, message: `SMS provider for client not yet set` };
     }
 
+    request.phoneNumbers = (request.phoneNumbers ?? []).map(normalizeSmsPhone);
+
     if (smsProvider) {
 
       console.log('smsProvider', smsProvider);
@@ -332,6 +339,8 @@ export class SmsService implements OnModuleInit {
     if (!smsProvider) {
       return { status: false, message: `SMS provider for client not yet set` };
     }
+
+    request.phoneNumbers = (request.phoneNumbers ?? []).map(normalizeSmsPhone);
 
     if (smsProvider) {
       const data = {
