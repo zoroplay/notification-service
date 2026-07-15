@@ -181,13 +181,7 @@ jobs:
             bash ~/notification-service/deploy.sh
           '
 
-      - name: Run migrations
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_IP }} '
-            cd ~/notification-service
-            docker compose run --rm notification-service npx prisma migrate resolve --rolled-back 20260505120000_notifications_deleted_at || true
-            docker compose run --rm notification-service npx prisma migrate deploy
-          '
+
 
   deploy-production:
     needs: [version, build, release]
@@ -227,9 +221,4 @@ jobs:
             bash ~/notification-service/deploy.sh
           '
 
-      - name: Run migrations
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.PROD_SERVER_USER }}@${{ secrets.PROD_SERVER_IP }} '
-            cd ~/notification-service
-            docker compose run --rm notification-service npx prisma migrate deploy
-          '
+
