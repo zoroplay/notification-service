@@ -14,18 +14,25 @@ export class EmailService implements OnModuleInit {
   async onModuleInit() {
     this.logger.log('Initializing SendGrid configuration...');
 
-    const config = await this.prisma.email_Settings.findFirst({
-      where: {
-        gatewayName: 'sendgrid',
-        status: true,
-      },
-    });
+    let apiKey = this.fallbackApiKey;
+    try {
+      const config = await this.prisma.email_Settings.findFirst({
+        where: {
+          gatewayName: 'sendgrid',
+          status: true,
+        },
+      });
 
-    const apiKey = config?.apiKey || this.fallbackApiKey;
-
-    if (!config?.apiKey) {
+      if (config?.apiKey) {
+        apiKey = config.apiKey;
+      } else {
+        this.logger.warn(
+          'SendGrid API key not found in DB, using fallback SENDGRID_API_KEY/default key',
+        );
+      }
+    } catch (error) {
       this.logger.warn(
-        'SendGrid API key not found in DB, using fallback SENDGRID_API_KEY/default key',
+        `SendGrid DB config unavailable (${error?.message ?? error}); using SENDGRID_API_KEY from env`,
       );
     }
 

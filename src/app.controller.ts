@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { GrpcMethod } from '@nestjs/microservices';
-import { DeleteAgentNotificationRequest, GetSettingsRequest, GetSettingsResponse, GetUserNotificationsRequest, HandleNotificationsRequest, NOTIFICATION_SERVICE_NAME, SaveSettingsRequest, SaveSettingsResponse, SetReadNotificationsRequest } from './proto/noti.pb';
+import { DeleteAgentNotificationRequest, GetSettingsRequest, GetSettingsResponse, GetUserNotificationsRequest, HandleNotificationsRequest, NOTIFICATION_SERVICE_NAME, NotifyCampaignAwardRequest, NotifyCampaignAwardResponse, SaveSettingsRequest, SaveSettingsResponse, SetReadNotificationsRequest } from './proto/noti.pb';
 
 @Controller()
 export class AppController {
@@ -54,6 +54,13 @@ export class AppController {
     HandleNotificationsDto: HandleNotificationsRequest,
   ) {
     return this.appService.handleUserNotifications(HandleNotificationsDto);
+  }
+
+  @GrpcMethod(NOTIFICATION_SERVICE_NAME, 'NotifyCampaignAward')
+  async NotifyCampaignAward(
+    dto: NotifyCampaignAwardRequest,
+  ): Promise<NotifyCampaignAwardResponse> {
+    return this.appService.notifyCampaignAward(dto);
   }
 
 }

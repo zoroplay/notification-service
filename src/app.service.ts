@@ -8,6 +8,8 @@ import {
   GetUserNotificationsResponse,
   HandleNotificationsRequest,
   HandleNotificationsResponse,
+  NotifyCampaignAwardRequest,
+  NotifyCampaignAwardResponse,
   SaveSettingsRequest,
   SaveSettingsResponse,
   SetReadNotificationsRequest,
@@ -15,12 +17,14 @@ import {
   SettingData,
 } from './proto/noti.pb';
 import { InAppGateway } from './in-app/in-app.gateway';
+import { SmsService } from './sms/sms.service';
 
 @Injectable()
 export class AppService {
   constructor(
     private prisma: PrismaService,
     private readonly inAppGateway: InAppGateway,
+    private readonly smsService: SmsService,
   ) {}
 
   response(value: any): {
@@ -184,7 +188,7 @@ export class AppService {
   }: SetReadNotificationsRequest): Promise<SetReadNotificationsResponse> {
     try {
       const existing = await this.prisma.notifications.findFirst({
-        where: { id, deletedAt: null },
+        where: { id },
       });
       if (!existing) {
         return {
@@ -234,14 +238,13 @@ export class AppService {
   }: DeleteAgentNotificationRequest): Promise<DeleteAgentNotificationResponse> {
     try {
       const existing = await this.prisma.notifications.findFirst({
-        where: { id, userID: userId, deletedAt: null },
+        where: { id, userID: userId },
       });
       if (!existing) {
         return { status: false, message: 'Notification not found' };
       }
-      await this.prisma.notifications.update({
+      await this.prisma.notifications.delete({
         where: { id },
-        data: { deletedAt: new Date() },
       });
       this.inAppGateway.emitNotificationDeleted(userId, id);
       return { status: true, message: 'Notification deleted' };
@@ -257,7 +260,6 @@ export class AppService {
     const users = await this.prisma.notifications.findMany({
       where: {
         userID: userId,
-        deletedAt: null,
         ...(includeRead ? {} : { status: 0 }),
       },
       orderBy: { createdAt: 'desc' },
@@ -298,5 +300,62 @@ export class AppService {
     }
 
     return { status: true, message: 'Settings retrieved successfully', data };
+  }
+
+  async notifyCampaignAward(
+    request: NotifyCampaignAwardRequest,
+  ): Promise<NotifyCampaignAwardResponse> {
+    const title = request.title?.trim() || 'Bonus Award';
+    const message = request.message?.trim();
+    if (!message) {
+      return { status: false, message: 'Message is required', smsSent: false };
+    }
+    if (!request.userId || request.userId <= 0) {
+      return { status: false, message: 'Invalid user id', smsSent: false };
+    }
+
+    const inApp = await this.handleUserNotifications({
+      userId: request.userId,
+      userIds: [],
+      title,
+      description: message,
+    });
+    if (!inApp.status) {
+      return {
+        status: false,
+        message: inApp.message,
+        inApp: inApp.data,
+        smsSent: false,
+      };
+    }
+
+    let smsSent = false;
+    const phoneNumber = request.phoneNumber?.trim();
+    if (phoneNumber && request.clientId > 0) {
+      const sms = await this.smsService.handleSMS({
+        clientID: request.clientId,
+        phoneNumber,
+        operator: request.operator || 'VODACOM',
+        message,
+      });
+      smsSent = Boolean(sms?.status);
+      if (!smsSent) {
+        return {
+          status: true,
+          message: `In-app notification created; SMS failed: ${sms?.message ?? 'unknown error'}`,
+          inApp: inApp.data,
+          smsSent: false,
+        };
+      }
+    }
+
+    return {
+      status: true,
+      message: phoneNumber
+        ? 'Campaign award notification delivered (in-app + SMS)'
+        : 'Campaign award in-app notification created (no phone number for SMS)',
+      inApp: inApp.data,
+      smsSent,
+    };
   }
 }
