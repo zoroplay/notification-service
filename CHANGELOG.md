@@ -1,3 +1,33 @@
+# 1.0.0 (2026-08-18)
+
+
+### Bug Fixes
+
+* add Redis password authentication to cache configuration ([a83bea7](https://github.com/zoroplay/notification-service/commit/a83bea745745b9062534f68debbc9dd73265b105))
+* added logs ([afd3bce](https://github.com/zoroplay/notification-service/commit/afd3bce83d77f34f0f7967943280d79be1bacb72))
+* fixed env file ([1ef7d6f](https://github.com/zoroplay/notification-service/commit/1ef7d6f53f3d8734cc5021b13bad63fc3b4d63bd))
+* merge remote staging with local changes ([c80adc1](https://github.com/zoroplay/notification-service/commit/c80adc16db75599797ebae520dff35abd4a96cea))
+* modified in app message ([4c00f37](https://github.com/zoroplay/notification-service/commit/4c00f3708568e01042e3db1cf1187f373e0cb043))
+* modified proto path ([f07fb11](https://github.com/zoroplay/notification-service/commit/f07fb1122e67b93813766294b5be5db170c588e3))
+* modified sms ([84699a6](https://github.com/zoroplay/notification-service/commit/84699a68383b6f75e577396353c5b30f2d9a4365))
+* resolved conflicts ([8d159a2](https://github.com/zoroplay/notification-service/commit/8d159a2cccf7b3e306500a20630d1cb249851006))
+* send message ([0a4b9fe](https://github.com/zoroplay/notification-service/commit/0a4b9fe56a6b6ccdd9df1c1a315235316ed0cc8e))
+* simplify Dockerfile to resolve container startup issues ([987c44e](https://github.com/zoroplay/notification-service/commit/987c44ec9232105dba59865ec35bb83ae719d374))
+* trigger empty release ([d3cd220](https://github.com/zoroplay/notification-service/commit/d3cd22066ed42cc98a0ef2c0a75004464fc0eaeb))
+* trigger empty release ([2f3ff2c](https://github.com/zoroplay/notification-service/commit/2f3ff2ca462420fd95537e9f328f60e1373f86e2))
+* update proto path and add restart policy to resolve container crashes ([177287b](https://github.com/zoroplay/notification-service/commit/177287bfa9c05efd75cd8cf9d99f58b8ed7eaaf5))
+* update Redis host to localhost to resolve connection error ([21c99b5](https://github.com/zoroplay/notification-service/commit/21c99b5c28ecfc508d469bfaff9d7975ab55f90b))
+* use .env instead of .env.staging in docker-compose ([72b528d](https://github.com/zoroplay/notification-service/commit/72b528da5f7850d54d762602625806ab1b6dac8b))
+* use bridge driver for sbenet network configuration ([a9cc243](https://github.com/zoroplay/notification-service/commit/a9cc243aeaa97be6d651b4de1e111022943c6c15))
+* use container hostnames for Redis and RabbitMQ connections ([fb61452](https://github.com/zoroplay/notification-service/commit/fb614526ec04a5a8cec0f74804fd7ef659117bb7))
+* use external sbenet network to connect with Redis and other services ([fd0e5ba](https://github.com/zoroplay/notification-service/commit/fd0e5bab08e62117ac220d67c8b4cb72bbb867fd))
+* vasmobile integration ([90b5387](https://github.com/zoroplay/notification-service/commit/90b53872a9735f46706d60dc648c42f07951683e))
+
+
+### Features
+
+* agent in-app message ([adb6585](https://github.com/zoroplay/notification-service/commit/adb65854c269ddeb375f881280a92dc8782cdbc5))
+
 # 1.0.0 (2026-07-15)
 
 
